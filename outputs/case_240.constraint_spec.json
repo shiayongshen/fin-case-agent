@@ -1,0 +1,379 @@
+[
+  {
+    "id": "fhc:has_violation",
+    "desc": "金融控股公司有違反法令、章程或有礙健全經營之虞",
+    "expr": [
+      "EQ",
+      "has_violation",
+      [
+        "EQ",
+        "violation_occurred",
+        true
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:correction_ordered",
+    "desc": "主管機關已予以糾正並限期改善",
+    "expr": [
+      "EQ",
+      "correction_ordered",
+      [
+        "EQ",
+        "correction_and_improvement_ordered",
+        true
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:penalty_measures",
+    "desc": "主管機關依情節輕重採取處分措施",
+    "expr": [
+      "EQ",
+      "penalty_measures_taken",
+      [
+        "OR",
+        [
+          "EQ",
+          "revoke_statutory_resolution",
+          true
+        ],
+        [
+          "EQ",
+          "suspend_subsidiary_business",
+          true
+        ],
+        [
+          "EQ",
+          "remove_manager_or_staff",
+          true
+        ],
+        [
+          "EQ",
+          "remove_or_suspend_director_supervisor",
+          true
+        ],
+        [
+          "EQ",
+          "dispose_subsidiary_shares",
+          true
+        ],
+        [
+          "EQ",
+          "revoke_permit",
+          true
+        ],
+        [
+          "EQ",
+          "other_necessary_measures",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:notify_moe_on_removal",
+    "desc": "依第四款解除董事、監察人職務時通知經濟部廢止登記",
+    "expr": [
+      "EQ",
+      "notify_moe_on_removal",
+      [
+        "IMPLIES",
+        [
+          "EQ",
+          "remove_or_suspend_director_supervisor",
+          true
+        ],
+        [
+          "EQ",
+          "moe_notification_done",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:dispose_shares_and_dissolve",
+    "desc": "廢止許可時限期內處分股份及董事人數不符規定，未完成則解散清算",
+    "expr": [
+      "EQ",
+      "dispose_shares_and_dissolve",
+      [
+        "IMPLIES",
+        [
+          "EQ",
+          "revoke_permit",
+          true
+        ],
+        [
+          "OR",
+          [
+            "NOT",
+            [
+              "EQ",
+              "shares_disposed_within_deadline",
+              true
+            ]
+          ],
+          [
+            "NOT",
+            [
+              "EQ",
+              "board_compliance_with_article4",
+              true
+            ]
+          ],
+          [
+            "NOT",
+            [
+              "EQ",
+              "name_change_completed",
+              true
+            ]
+          ],
+          [
+            "NOT",
+            [
+              "EQ",
+              "company_dissolved_and_liquidated",
+              true
+            ]
+          ]
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:internal_control_objectives_met",
+    "desc": "內部控制達成營運效果及效率、報導可靠性及法令遵循目標",
+    "expr": [
+      "EQ",
+      "internal_control_objectives_met",
+      [
+        "AND",
+        [
+          "EQ",
+          "operational_effectiveness_and_efficiency",
+          true
+        ],
+        [
+          "EQ",
+          "reporting_reliability_and_compliance",
+          true
+        ],
+        [
+          "EQ",
+          "legal_and_regulatory_compliance",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:external_financial_reporting_compliance",
+    "desc": "外部財務報導符合一般公認會計原則及交易適當核准",
+    "expr": [
+      "EQ",
+      "external_financial_reporting_compliance",
+      [
+        "AND",
+        [
+          "EQ",
+          "gaap_compliance",
+          true
+        ],
+        [
+          "EQ",
+          "proper_transaction_approval",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:definitions_controlled_shareholding",
+    "desc": "控制性持股定義",
+    "expr": [
+      "EQ",
+      "controlled_shareholding",
+      [
+        "OR",
+        [
+          "GT",
+          "voting_shares_percentage",
+          25.0
+        ],
+        [
+          "GT",
+          "capital_percentage",
+          25.0
+        ],
+        [
+          "GT",
+          "direct_or_indirect_board_majority",
+          0
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:definitions_fhc",
+    "desc": "金融控股公司定義",
+    "expr": [
+      "EQ",
+      "financial_holding_company",
+      [
+        "AND",
+        [
+          "EQ",
+          "controlled_shareholding",
+          true
+        ],
+        [
+          "EQ",
+          "established_under_fhc_law",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:definitions_financial_institution",
+    "desc": "金融機構定義",
+    "expr": [
+      "EQ",
+      "financial_institution",
+      [
+        "OR",
+        [
+          "EQ",
+          "is_bank",
+          true
+        ],
+        [
+          "EQ",
+          "is_insurance_company",
+          true
+        ],
+        [
+          "EQ",
+          "is_securities_firm",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:definitions_subsidiary",
+    "desc": "子公司定義",
+    "expr": [
+      "EQ",
+      "subsidiary",
+      [
+        "OR",
+        [
+          "EQ",
+          "is_bank_subsidiary",
+          true
+        ],
+        [
+          "EQ",
+          "is_insurance_subsidiary",
+          true
+        ],
+        [
+          "EQ",
+          "is_securities_subsidiary",
+          true
+        ],
+        [
+          "EQ",
+          "is_other_subsidiary",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:definitions_major_shareholder",
+    "desc": "大股東定義",
+    "expr": [
+      "EQ",
+      "major_shareholder",
+      [
+        "OR",
+        [
+          "GE",
+          "fhc_or_subsidiary_share_percentage",
+          5.0
+        ],
+        [
+          "GE",
+          "natural_person_and_spouse_and_minor_children_share_percentage",
+          5.0
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "meta:penalty_default_false",
+    "desc": "預設不處罰",
+    "expr": [
+      "EQ",
+      "penalty",
+      false
+    ],
+    "weight": 0,
+    "domain": "meta"
+  },
+  {
+    "id": "meta:penalty_conditions",
+    "desc": "處罰條件：有違反且未依規定採取處分措施時處罰",
+    "expr": [
+      "EQ",
+      "penalty",
+      [
+        "AND",
+        [
+          "EQ",
+          "has_violation",
+          true
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "penalty_measures_taken",
+            true
+          ]
+        ]
+      ]
+    ],
+    "weight": 0,
+    "domain": "meta"
+  }
+]

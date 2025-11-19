@@ -1,0 +1,10 @@
+{
+  "own_capital": 0.4,
+  "risk_capital": 1.0,
+  "net_worth": 1.0,
+  "net_worth_ratio_prev1": 0.01,
+  "net_worth_ratio_prev2": 0.01,
+  "capital_increase_completed": false,
+  "financial_or_business_improvement_plan_completed": false,
+  "merger_completed": false
+}

@@ -1,0 +1,216 @@
+[
+  {
+    "id": "fhc:violation_occurred",
+    "desc": "金融控股公司有違反法令、章程或有礙健全經營之虞",
+    "expr": [
+      "EQ",
+      "violation_occurred",
+      [
+        "EQ",
+        "violation_flag",
+        true
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:correction_ordered",
+    "desc": "主管機關已予以糾正並限期令其改善",
+    "expr": [
+      "EQ",
+      "correction_ordered",
+      [
+        "AND",
+        [
+          "EQ",
+          "correction_given",
+          true
+        ],
+        [
+          "EQ",
+          "improvement_deadline_set",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:penalty_measures",
+    "desc": "主管機關依情節輕重採取處分措施",
+    "expr": [
+      "EQ",
+      "penalty_measures",
+      [
+        "OR",
+        [
+          "EQ",
+          "revoke_statutory_resolution",
+          true
+        ],
+        [
+          "EQ",
+          "suspend_subsidiary_business",
+          true
+        ],
+        [
+          "EQ",
+          "remove_manager_or_staff",
+          true
+        ],
+        [
+          "EQ",
+          "remove_or_suspend_director_supervisor",
+          true
+        ],
+        [
+          "EQ",
+          "dispose_subsidiary_shares",
+          true
+        ],
+        [
+          "EQ",
+          "revoke_permit",
+          true
+        ],
+        [
+          "EQ",
+          "other_necessary_measures",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:notify_moe_on_remove_director_supervisor",
+    "desc": "依第四款解除董事、監察人職務時，主管機關通知經濟部廢止其登記",
+    "expr": [
+      "EQ",
+      "notify_moe_on_remove_director_supervisor",
+      [
+        "IMPLIES",
+        [
+          "EQ",
+          "remove_or_suspend_director_supervisor",
+          true
+        ],
+        [
+          "EQ",
+          "moe_notified_to_revoke_registration",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:dispose_shares_and_deregister_after_revoke_permit",
+    "desc": "廢止許可後，限期內處分股份及董事人數不符規定，未完成則解散清算",
+    "expr": [
+      "EQ",
+      "dispose_shares_and_deregister_after_revoke_permit",
+      [
+        "IMPLIES",
+        [
+          "EQ",
+          "revoke_permit",
+          true
+        ],
+        [
+          "AND",
+          [
+            "EQ",
+            "dispose_shares_within_deadline",
+            true
+          ],
+          [
+            "EQ",
+            "reduce_directors_to_meet_requirements",
+            true
+          ],
+          [
+            "EQ",
+            "forbid_use_fhc_name_and_change_registration",
+            true
+          ],
+          [
+            "IMPLIES",
+            [
+              "NOT",
+              [
+                "AND",
+                [
+                  "EQ",
+                  "dispose_shares_within_deadline",
+                  true
+                ],
+                [
+                  "EQ",
+                  "reduce_directors_to_meet_requirements",
+                  true
+                ]
+              ]
+            ],
+            [
+              "EQ",
+              "liquidation_ordered",
+              true
+            ]
+          ]
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "meta:penalty_default_false",
+    "desc": "預設不處罰",
+    "expr": [
+      "EQ",
+      "penalty",
+      false
+    ],
+    "weight": 0,
+    "domain": "meta"
+  },
+  {
+    "id": "meta:penalty_conditions",
+    "desc": "處罰條件：違反法令章程或有礙健全經營且未依規定接受處分時處罰",
+    "expr": [
+      "EQ",
+      "penalty",
+      [
+        "AND",
+        [
+          "EQ",
+          "violation_occurred",
+          true
+        ],
+        [
+          "NOT",
+          [
+            "OR",
+            [
+              "EQ",
+              "penalty_measures",
+              true
+            ],
+            [
+              "EQ",
+              "correction_ordered",
+              true
+            ]
+          ]
+        ]
+      ]
+    ],
+    "weight": 0,
+    "domain": "meta"
+  }
+]

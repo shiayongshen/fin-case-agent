@@ -1,0 +1,52 @@
+# chainlit.toml
+
+[project]
+# 這邊可以填專案描述、名稱之類的
+name = "My Chainlit App"
+
+# 指定資料庫檔案
+database = "chainlit.db"
+
+[auth]
+# 使用簡單密碼認證
+type = "header"
+
+[features]
+# 啟用對話歷史（左邊面板顯示）
+conversation_history = true
+# 啟用資料持久化（儲存聊天記錄到資料庫）
+persist_chat_history = true
+
+# 你的其他 features（如果有）也保留
+multi_modal = true
+show_readme_as_default = false
+edit_message = true
+user_message_autoscroll = true
+allow_thread_sharing = false
+unsafe_allow_html = false
+latex = false
+
+[UI]
+name = "Fin Compliance Assistant"
+default_theme = "dark"
+layout = "wide"
+default_sidebar_state = "open"
+public_dir = "public"
+custom_js = "/public/custom.js" 
+
+[meta]
+generated_by = "custom"
+
+# （如果有需要）你可以在這裡加入自訂 CSS / JS 等設定
+
+[theme]
+primary_color = "#0A1A2F"         # 深藍（主色）
+secondary_color = "#1E3A5F"       # 次要藍色
+background_color = "#0B0E13"      # 幾乎黑的背景
+text_color = "#E5E7EB"            # 淺灰文字
+button_primary_text_color = "#FFFFFF"
+font_family = "Inter"
+
+[assistant]
+name = "Vincent Streaming Assistant"
+avatar = "public/vincent_dark.png"

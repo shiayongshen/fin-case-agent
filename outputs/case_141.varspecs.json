@@ -1,0 +1,172 @@
+[
+  {
+    "name": "adjustment_deadline",
+    "type": "Int",
+    "unit": "days",
+    "domain": {
+      "min": 0,
+      "max": 7
+    },
+    "source": "default"
+  },
+  {
+    "name": "agent_application",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "agent_capital_adjusted",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "agent_capital_adjustment_required",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "agent_capital_cash_only",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "agent_capital_paid_in_cash",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "agent_min_capital",
+    "type": "Real",
+    "unit": "%",
+    "domain": {
+      "min": -100,
+      "max": 1000
+    },
+    "source": "default"
+  },
+  {
+    "name": "broker_application_insurance",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "broker_application_reinsurance",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "broker_capital_adjusted",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "broker_capital_adjustment_required",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "broker_capital_cash_only",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "broker_capital_paid_in_cash",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "broker_min_capital",
+    "type": "Real",
+    "unit": "%",
+    "domain": {
+      "min": -100,
+      "max": 1000
+    },
+    "source": "default"
+  },
+  {
+    "name": "capital_adjustment_due_date",
+    "type": "Int",
+    "unit": "days",
+    "domain": {
+      "min": 0,
+      "max": 7
+    },
+    "source": "default"
+  },
+  {
+    "name": "compliance_163_4_financial_or_business",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "compliance_163_5_applied_165_1",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "compliance_163_7",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "compliance_165_1",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "current_date",
+    "type": "Int",
+    "unit": "days",
+    "domain": {
+      "min": 0,
+      "max": 7
+    },
+    "source": "default"
+  },
+  {
+    "name": "license_issue_date",
+    "type": "Int",
+    "unit": "days",
+    "domain": {
+      "min": 0,
+      "max": 7
+    },
+    "source": "default"
+  },
+  {
+    "name": "penalty",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "share_or_capital_transfer_date",
+    "type": "Int",
+    "unit": "days",
+    "domain": {
+      "min": 0,
+      "max": 7
+    },
+    "source": "default"
+  },
+  {
+    "name": "share_or_capital_transfer_due_to_inheritance",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "share_or_capital_transfer_ratio",
+    "type": "Real",
+    "unit": "%",
+    "domain": {
+      "min": -100,
+      "max": 1000
+    },
+    "source": "default"
+  },
+  {
+    "name": "violation_167_2",
+    "type": "Bool",
+    "source": "default"
+  }
+]

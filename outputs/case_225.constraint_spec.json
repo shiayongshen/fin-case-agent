@@ -1,0 +1,217 @@
+[
+  {
+    "id": "fhc:related_person_definition",
+    "desc": "同一人、同一關係人及同一關係企業定義",
+    "expr": [
+      "EQ",
+      "related_person_definition",
+      [
+        "AND",
+        [
+          "EQ",
+          "same_person_is_natural_or_legal",
+          true
+        ],
+        [
+          "EQ",
+          "related_person_includes_spouse_and_2nd_degree_blood",
+          true
+        ],
+        [
+          "EQ",
+          "related_person_includes_enterprise_responsible_by_person_or_spouse",
+          true
+        ],
+        [
+          "EQ",
+          "related_corporate_person_includes_chairman_and_manager_and_spouse_and_2nd_degree_blood",
+          true
+        ],
+        [
+          "EQ",
+          "related_corporate_person_includes_enterprise_with_1_3_share_or_control",
+          true
+        ],
+        [
+          "EQ",
+          "related_corporate_person_includes_enterprise_with_chairman_manager_or_majority_board",
+          true
+        ],
+        [
+          "EQ",
+          "related_enterprise_applies_company_law_369_1_to_369_3_369_9_369_11",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:transaction_reporting_required",
+    "desc": "子公司對同一人、同一關係人及同一關係企業交易達一定金額或比率須申報揭露",
+    "expr": [
+      "EQ",
+      "transaction_reporting_required",
+      [
+        "AND",
+        [
+          "GE",
+          "transaction_amount_or_ratio",
+          "threshold_amount_or_ratio"
+        ],
+        [
+          "EQ",
+          "report_within_30_days_after_quarter_end",
+          true
+        ],
+        [
+          "EQ",
+          "report_to_authority",
+          true
+        ],
+        [
+          "EQ",
+          "disclose_publicly",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:transaction_scope",
+    "desc": "交易行為範圍",
+    "expr": [
+      "EQ",
+      "transaction_scope_valid",
+      [
+        "OR",
+        [
+          "EQ",
+          "transaction_is_credit",
+          true
+        ],
+        [
+          "EQ",
+          "transaction_is_short_term_note_guarantee_or_endorsement",
+          true
+        ],
+        [
+          "EQ",
+          "transaction_is_repurchase_of_note_or_bond",
+          true
+        ],
+        [
+          "EQ",
+          "transaction_is_investment_or_purchase_of_issuer_securities",
+          true
+        ],
+        [
+          "EQ",
+          "transaction_is_derivative_financial_product",
+          true
+        ],
+        [
+          "EQ",
+          "transaction_is_other_regulated_by_authority",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:violation_article_46",
+    "desc": "違反第46條申報或揭露規定",
+    "expr": [
+      "EQ",
+      "violation_article_46",
+      [
+        "OR",
+        [
+          "NOT",
+          [
+            "EQ",
+            "transaction_reporting_required",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "transaction_scope_valid",
+            true
+          ]
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:violation_article_60_15",
+    "desc": "違反第60條第十五款：違反第46條申報或揭露規定",
+    "expr": [
+      "EQ",
+      "violation_article_60_15",
+      [
+        "EQ",
+        "violation_article_46",
+        true
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:violation_article_60_any",
+    "desc": "違反第60條任一款規定",
+    "expr": [
+      "EQ",
+      "violation_article_60_any",
+      [
+        "OR",
+        [
+          "EQ",
+          "violation_article_60_15",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "meta:penalty_default_false",
+    "desc": "預設不處罰",
+    "expr": [
+      "EQ",
+      "penalty",
+      false
+    ],
+    "weight": 0,
+    "domain": "meta"
+  },
+  {
+    "id": "meta:penalty_conditions",
+    "desc": "處罰條件：違反第60條第十五款規定時處罰",
+    "expr": [
+      "EQ",
+      "penalty",
+      [
+        "OR",
+        [
+          "EQ",
+          "violation_article_60_15",
+          true
+        ]
+      ]
+    ],
+    "weight": 0,
+    "domain": "meta"
+  }
+]

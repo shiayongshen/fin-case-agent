@@ -1,0 +1,489 @@
+{
+  "case_id": "case_87",
+  "success": true,
+  "error_message": null,
+  "total_time_sec": 110.22,
+  "repair_attempts": 0,
+  "total_agent_calls": 5,
+  "total_input_tokens": 15511,
+  "total_output_tokens": 8271,
+  "total_tokens": 23782,
+  "total_cost_usd": 0.019438,
+  "timestamp": "2025-10-21T21:56:15.490666",
+  "step1_law_parser": "PASS",
+  "step2_completion": "PASS",
+  "step3_json_valid": "PASS",
+  "step4_varspec": "PASS",
+  "step5_constraints_parseable": "PASS",
+  "step5_repair_needed": "FAIL",
+  "step5_repair_success": "NOT_RUN",
+  "step6_consistency_check": "PASS",
+  "step6_repair_success": "PASS",
+  "step7_case_mapper": "PASS",
+  "step7_facts_validation": "NOT_RUN",
+  "step7_z3_validation": "PASS",
+  "step8_case_law_check": "PASS",
+  "step8_repair_success": "NOT_RUN",
+  "step8_violation_detected": "PASS",
+  "step9_z3_optimize": "PASS",
+  "consistency_check": "PASS",
+  "agent_calls": [
+    {
+      "agent": "parser",
+      "input_tokens": 1867,
+      "output_tokens": 2768,
+      "elapsed_time": 35.06608271598816,
+      "cost": 0.0051756
+    },
+    {
+      "agent": "parser_completion",
+      "input_tokens": 6866,
+      "output_tokens": 2682,
+      "elapsed_time": 36.96538972854614,
+      "cost": 0.007037600000000001
+    },
+    {
+      "agent": "varspec",
+      "input_tokens": 321,
+      "output_tokens": 1178,
+      "elapsed_time": 14.942191123962402,
+      "cost": 0.0020132
+    },
+    {
+      "agent": "varspec_post_repair",
+      "input_tokens": 321,
+      "output_tokens": 1178,
+      "elapsed_time": 15.106657028198242,
+      "cost": 0.0020132
+    },
+    {
+      "agent": "mapper",
+      "input_tokens": 6136,
+      "output_tokens": 465,
+      "elapsed_time": 8.053261995315552,
+      "cost": 0.0031984000000000005
+    }
+  ],
+  "checkpoints_detail": {
+    "step1_law_parser": {
+      "passed": true,
+      "details": "7310 chars",
+      "timestamp": 35.06610298156738
+    },
+    "step2_completion": {
+      "passed": true,
+      "details": "7107 chars",
+      "timestamp": 72.0315670967102
+    },
+    "step3_json_valid": {
+      "passed": true,
+      "details": "15 constraints",
+      "timestamp": 72.03187918663025
+    },
+    "step4_varspec": {
+      "passed": true,
+      "details": "46 varspecs",
+      "timestamp": 86.97424817085266
+    },
+    "step5_constraints_parseable": {
+      "passed": true,
+      "details": "15 constraints",
+      "timestamp": 86.98781108856201
+    },
+    "step5_repair_needed": false,
+    "step5_repair_success": null,
+    "step6_consistency_check": {
+      "passed": true,
+      "details": "SAT",
+      "timestamp": 87.00253319740295
+    },
+    "step6_repair_success": {
+      "passed": true,
+      "details": "Repair successful",
+      "timestamp": 87.00253510475159
+    },
+    "step7_case_mapper": {
+      "passed": true,
+      "details": "43 facts",
+      "timestamp": 110.16425013542175
+    },
+    "step7_facts_validation": null,
+    "step7_z3_validation": {
+      "passed": true,
+      "details": "43 constraints",
+      "timestamp": 110.16727018356323
+    },
+    "step8_case_law_check": {
+      "passed": true,
+      "details": "UNSAT",
+      "timestamp": 110.18796706199646
+    },
+    "step8_repair_success": null,
+    "step8_violation_detected": {
+      "passed": true,
+      "details": "['meta:penalty_default_false', 'meta:penalty_conditions', 'c27']",
+      "timestamp": 110.1879711151123
+    },
+    "step9_z3_optimize": {
+      "passed": true,
+      "details": "success",
+      "timestamp": 110.20763897895813
+    },
+    "consistency_check": {
+      "passed": true,
+      "details": "Consistent after 0 attempts",
+      "timestamp": 87.00252795219421
+    }
+  },
+  "fix_logs": [
+    {
+      "id": "varspec:broker_minimum_capital_requirement",
+      "rule": "Auto convert to Real",
+      "before": "Bool",
+      "after": "Real",
+      "timestamp": 86.98
+    },
+    {
+      "id": "insurance:broker_minimum_capital_requirement",
+      "rule": "Fix CASE structure/type",
+      "before": [
+        "EQ",
+        "broker_minimum_capital_requirement",
+        [
+          "CASE",
+          [
+            "AND",
+            [
+              "EQ",
+              "application_date_after_110_03_03",
+              true
+            ],
+            [
+              "EQ",
+              "business_type_insurance_broker",
+              true
+            ],
+            [
+              "NOT",
+              [
+                "EQ",
+                "business_type_reinsurance_broker",
+                true
+              ]
+            ]
+          ],
+          [
+            "GE",
+            "paid_in_capital",
+            20000000.0
+          ],
+          [
+            "AND",
+            [
+              "EQ",
+              "application_date_after_110_03_03",
+              true
+            ],
+            [
+              "NOT",
+              [
+                "EQ",
+                "business_type_insurance_broker",
+                true
+              ]
+            ],
+            [
+              "EQ",
+              "business_type_reinsurance_broker",
+              true
+            ]
+          ],
+          [
+            "GE",
+            "paid_in_capital",
+            20000000.0
+          ],
+          [
+            "AND",
+            [
+              "EQ",
+              "application_date_after_110_03_03",
+              true
+            ],
+            [
+              "EQ",
+              "business_type_insurance_broker",
+              true
+            ],
+            [
+              "EQ",
+              "business_type_reinsurance_broker",
+              true
+            ]
+          ],
+          [
+            "GE",
+            "paid_in_capital",
+            30000000.0
+          ],
+          [
+            "AND",
+            [
+              "NOT",
+              [
+                "EQ",
+                "application_date_after_110_03_03",
+                true
+              ]
+            ],
+            [
+              "EQ",
+              "business_type_insurance_broker",
+              true
+            ],
+            [
+              "NOT",
+              [
+                "EQ",
+                "business_type_reinsurance_broker",
+                true
+              ]
+            ]
+          ],
+          [
+            "GE",
+            "paid_in_capital",
+            5000000.0
+          ],
+          [
+            "AND",
+            [
+              "NOT",
+              [
+                "EQ",
+                "application_date_after_110_03_03",
+                true
+              ]
+            ],
+            [
+              "NOT",
+              [
+                "EQ",
+                "business_type_insurance_broker",
+                true
+              ]
+            ],
+            [
+              "EQ",
+              "business_type_reinsurance_broker",
+              true
+            ]
+          ],
+          [
+            "GE",
+            "paid_in_capital",
+            10000000.0
+          ],
+          [
+            "AND",
+            [
+              "NOT",
+              [
+                "EQ",
+                "application_date_after_110_03_03",
+                true
+              ]
+            ],
+            [
+              "EQ",
+              "business_type_insurance_broker",
+              true
+            ],
+            [
+              "EQ",
+              "business_type_reinsurance_broker",
+              true
+            ]
+          ],
+          [
+            "GE",
+            "paid_in_capital",
+            10000000.0
+          ],
+          true,
+          false
+        ]
+      ],
+      "after": [
+        "EQ",
+        "broker_minimum_capital_requirement",
+        [
+          "CASE",
+          [
+            "AND",
+            [
+              "EQ",
+              "application_date_after_110_03_03",
+              true
+            ],
+            [
+              "EQ",
+              "business_type_insurance_broker",
+              true
+            ],
+            [
+              "NOT",
+              [
+                "EQ",
+                "business_type_reinsurance_broker",
+                true
+              ]
+            ]
+          ],
+          [
+            "GE",
+            "paid_in_capital",
+            20000000.0
+          ],
+          [
+            "AND",
+            [
+              "EQ",
+              "application_date_after_110_03_03",
+              true
+            ],
+            [
+              "NOT",
+              [
+                "EQ",
+                "business_type_insurance_broker",
+                true
+              ]
+            ],
+            [
+              "EQ",
+              "business_type_reinsurance_broker",
+              true
+            ]
+          ],
+          [
+            "GE",
+            "paid_in_capital",
+            20000000.0
+          ],
+          [
+            "AND",
+            [
+              "EQ",
+              "application_date_after_110_03_03",
+              true
+            ],
+            [
+              "EQ",
+              "business_type_insurance_broker",
+              true
+            ],
+            [
+              "EQ",
+              "business_type_reinsurance_broker",
+              true
+            ]
+          ],
+          [
+            "GE",
+            "paid_in_capital",
+            30000000.0
+          ],
+          [
+            "AND",
+            [
+              "NOT",
+              [
+                "EQ",
+                "application_date_after_110_03_03",
+                true
+              ]
+            ],
+            [
+              "EQ",
+              "business_type_insurance_broker",
+              true
+            ],
+            [
+              "NOT",
+              [
+                "EQ",
+                "business_type_reinsurance_broker",
+                true
+              ]
+            ]
+          ],
+          [
+            "GE",
+            "paid_in_capital",
+            5000000.0
+          ],
+          [
+            "AND",
+            [
+              "NOT",
+              [
+                "EQ",
+                "application_date_after_110_03_03",
+                true
+              ]
+            ],
+            [
+              "NOT",
+              [
+                "EQ",
+                "business_type_insurance_broker",
+                true
+              ]
+            ],
+            [
+              "EQ",
+              "business_type_reinsurance_broker",
+              true
+            ]
+          ],
+          [
+            "GE",
+            "paid_in_capital",
+            10000000.0
+          ],
+          [
+            "AND",
+            [
+              "NOT",
+              [
+                "EQ",
+                "application_date_after_110_03_03",
+                true
+              ]
+            ],
+            [
+              "EQ",
+              "business_type_insurance_broker",
+              true
+            ],
+            [
+              "EQ",
+              "business_type_reinsurance_broker",
+              true
+            ]
+          ],
+          [
+            "GE",
+            "paid_in_capital",
+            10000000.0
+          ],
+          true,
+          false,
+          0.0
+        ]
+      ],
+      "timestamp": 86.98
+    }
+  ]
+}

@@ -1,0 +1,212 @@
+[
+  {
+    "name": "approved_by_authority",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "asset_transaction_procedure_compliant",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "board_approval_majority_met",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "board_approval_quorum_met",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "capital_increase_plan_executed",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "capital_to_risk_capital_ratio",
+    "type": "Real",
+    "unit": "%",
+    "domain": {
+      "min": -100,
+      "max": 1000
+    },
+    "source": "default"
+  },
+  {
+    "name": "contract_has_termination_and_exemption_clause",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "counted_in_total_amount",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "evaluation_report_provided",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "funds",
+    "type": "Real",
+    "source": "default"
+  },
+  {
+    "name": "government_transaction_exclusion",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "government_transaction_single_limit",
+    "type": "Real",
+    "source": "default"
+  },
+  {
+    "name": "government_transaction_single_limit_min_2b",
+    "type": "Real",
+    "source": "default"
+  },
+  {
+    "name": "information_disclosed_on_website",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "no_additional_transaction",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "non_related_real_estate_conditions_low_capital_negative_equity",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "non_related_real_estate_conditions_low_capital_positive_equity",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "non_related_real_estate_contract_clause",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "non_related_real_estate_single_limit_high_capital",
+    "type": "Real",
+    "source": "default"
+  },
+  {
+    "name": "non_related_real_estate_single_limit_low_capital_negative_equity",
+    "type": "Real",
+    "source": "default"
+  },
+  {
+    "name": "non_related_real_estate_single_limit_low_capital_positive_equity",
+    "type": "Real",
+    "source": "default"
+  },
+  {
+    "name": "non_related_real_estate_total_limit_high_capital",
+    "type": "Real",
+    "source": "default"
+  },
+  {
+    "name": "non_related_real_estate_total_limit_low_capital_negative_equity",
+    "type": "Real",
+    "source": "default"
+  },
+  {
+    "name": "non_related_real_estate_total_limit_low_capital_positive_equity",
+    "type": "Real",
+    "source": "default"
+  },
+  {
+    "name": "other_transaction_limit_single",
+    "type": "Real",
+    "source": "default"
+  },
+  {
+    "name": "other_transaction_limit_single_min_1b",
+    "type": "Real",
+    "source": "default"
+  },
+  {
+    "name": "other_transaction_limit_total",
+    "type": "Real",
+    "source": "default"
+  },
+  {
+    "name": "other_transaction_limit_total_max_2b",
+    "type": "Real",
+    "source": "default"
+  },
+  {
+    "name": "owner_equity",
+    "type": "Real",
+    "source": "default"
+  },
+  {
+    "name": "penalty",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "prior_limit_amount",
+    "type": "Real",
+    "source": "default"
+  },
+  {
+    "name": "prior_other_transaction_limit",
+    "type": "Real",
+    "source": "default"
+  },
+  {
+    "name": "prior_total_transaction_amount",
+    "type": "Real",
+    "source": "default"
+  },
+  {
+    "name": "public_tender_or_auction",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "single_real_estate_transaction_amount",
+    "type": "Real",
+    "source": "default"
+  },
+  {
+    "name": "single_transaction_amount",
+    "type": "Real",
+    "source": "default"
+  },
+  {
+    "name": "statutory_standard",
+    "type": "Real",
+    "source": "default"
+  },
+  {
+    "name": "total_real_estate_transaction_amount",
+    "type": "Real",
+    "source": "default"
+  },
+  {
+    "name": "total_transaction_amount",
+    "type": "Real",
+    "source": "default"
+  },
+  {
+    "name": "transaction_counterparty_is_government",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "written_opinions_from_directors_and_supervisors",
+    "type": "Bool",
+    "source": "default"
+  }
+]

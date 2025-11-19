@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  compliance-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: compliance_demo_app
+    restart: unless-stopped
+    ports:
+      - "7861:7861"
+    environment:
+      - REPORT_API_BASE=${REPORT_API_BASE:-http://fin-backend:6677}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - PYTHONPATH=/app
+      - CHAINLIT_AUTH_SECRET=${CHAINLIT_AUTH_SECRET:-8KeiRx0U3_tfUh38c1cERszzd3bLCGpb1eAUA_DBHm4}
+    networks:
+      - default
+      - fin-network
+    volumes:
+      # 持久化 ChromaDB 數據
+      - chroma_db:/app/chroma_db
+      # 分析輸出
+      - ./outputs:/app/outputs
+      # 日誌文件
+      - ./chainlit.db:/app/chainlit.db
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7861/health", "||", "exit", "1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+volumes:
+  chroma_db:
+    driver: local
+  code_execution:
+    driver: local
+
+networks:
+  fin-network:
+    external: true

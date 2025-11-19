@@ -1,0 +1,352 @@
+[
+  {
+    "name": "broker_foreign_broker_qualified",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "broker_reinsurance_conditions_consistent",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "broker_reinsurance_confirmation_obtained_before_effective",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "broker_reinsurance_confirmation_ok",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "complete_contract_delivered",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "complete_contract_delivered_within_6_months",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "conflict_of_interest",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "deliver_complete_contract_within_6_months",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "deliver_signed_contract_within_60_days",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "documents_retained_min_5_years",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "documents_saved_min_5_years",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "domestic_participation_ratio",
+    "type": "Real",
+    "unit": "%",
+    "domain": {
+      "min": -100,
+      "max": 1000
+    },
+    "source": "default"
+  },
+  {
+    "name": "domestic_participation_sufficient",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "domestic_reinsurance_approved",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "dual_agency_disclosed",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "dual_agency_disclosed_in_contract",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "eligible_reinsurance_target",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "ethics_and_self_regulation_ok",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "exempted_by_risk_management_standards",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "follow_ethics_and_self_regulation",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "foreign_broker_aggregate_limit_usd",
+    "type": "Real",
+    "source": "default"
+  },
+  {
+    "name": "foreign_broker_approved_by_home_authority",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "foreign_broker_deductible_rate",
+    "type": "Real",
+    "unit": "%",
+    "domain": {
+      "min": -100,
+      "max": 1000
+    },
+    "source": "default"
+  },
+  {
+    "name": "foreign_broker_insurance_period_uninterrupted",
+    "type": "Int",
+    "unit": "days",
+    "domain": {
+      "min": 0,
+      "max": 7
+    },
+    "source": "default"
+  },
+  {
+    "name": "foreign_broker_per_accident_limit_usd",
+    "type": "Real",
+    "source": "default"
+  },
+  {
+    "name": "foreign_broker_professional_liability_insurance_valid",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "foreign_broker_qualified",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "foreign_reinsurance_approved",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "foreign_reinsurance_credit_rating",
+    "type": "Real",
+    "source": "default"
+  },
+  {
+    "name": "internal_control_segregation_established",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "internal_control_segregation_ok",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "legal_reinsurance_entity",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "non_eligible_reinsurance_target",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "notify_major_info_after_effective",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "notify_original_insurer_after_effective",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "other_approved_reinsurance_entity",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "penalty",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "penalty_imposed",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "registered_professional_reinsurance",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "reinsurance_confirmation_before_effective_ok",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "reinsurance_confirmation_obtained_before_effective",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "reinsurance_consent_obtained",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "reinsurance_credit_and_consent_ok",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "reinsurance_credit_rating",
+    "type": "Real",
+    "source": "default"
+  },
+  {
+    "name": "reinsurance_documents_retained",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "reinsurance_documents_saved",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "reinsurance_info_delivered",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "reinsurance_info_delivered_before_effective",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "reinsurance_target_qualified",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "reinsurance_written_delegation_obtained",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "reinsurance_written_delegation_ok",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "required_credit_rating",
+    "type": "Real",
+    "source": "default"
+  },
+  {
+    "name": "risk_management_plan_arranged",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "risk_management_plan_compliant",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "serious_violation",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "signed_contract_delivered",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "signed_contract_delivered_within_60_days",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "temporary_non_proportional_reinsurance_compliant",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "temporary_non_proportional_reinsurance_non_compliant",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "temporary_non_proportional_reinsurance_ok",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "violated_163_7",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "violated_165_1_or_163_5",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "violated_management_rules",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "violation_163_7",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "violation_165_1_or_163_5",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "violation_any",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "violation_management_rules",
+    "type": "Bool",
+    "source": "default"
+  }
+]

@@ -1,0 +1,521 @@
+[
+  {
+    "id": "fhc:shareholding_over_10_percent_declaration_at_conversion",
+    "desc": "金融機構轉換為金融控股公司時，同一人或同一關係人持股超過10%應申報",
+    "expr": [
+      "EQ",
+      "shareholding_over_10_percent_declaration_at_conversion",
+      [
+        "IMPLIES",
+        [
+          "GT",
+          "shareholding_percent_at_conversion",
+          10.0
+        ],
+        [
+          "EQ",
+          "declaration_made_at_conversion",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:shareholding_over_5_percent_declaration_after_establishment",
+    "desc": "金融控股公司設立後，同一人或同一關係人持股超過5%應10日內申報",
+    "expr": [
+      "EQ",
+      "shareholding_over_5_percent_declaration_after_establishment",
+      [
+        "IMPLIES",
+        [
+          "GT",
+          "shareholding_percent_after_establishment",
+          5.0
+        ],
+        [
+          "LE",
+          "days_since_shareholding_over_5_percent",
+          10
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:shareholding_change_over_1_percent_declaration",
+    "desc": "持股超過5%後累積增減逾1%應申報",
+    "expr": [
+      "EQ",
+      "shareholding_change_over_1_percent_declaration",
+      [
+        "IMPLIES",
+        [
+          "AND",
+          [
+            "GT",
+            "shareholding_percent_after_establishment",
+            5.0
+          ],
+          [
+            "GT",
+            "shareholding_change_percent",
+            1.0
+          ]
+        ],
+        [
+          "EQ",
+          "declaration_made_for_change",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:shareholding_over_thresholds_prior_approval",
+    "desc": "持股超過10%、25%、50%應事先申請核准",
+    "expr": [
+      "EQ",
+      "shareholding_over_thresholds_prior_approval",
+      [
+        "OR",
+        [
+          "AND",
+          [
+            "GT",
+            "shareholding_percent",
+            10.0
+          ],
+          [
+            "EQ",
+            "approval_10_percent",
+            true
+          ]
+        ],
+        [
+          "AND",
+          [
+            "GT",
+            "shareholding_percent",
+            25.0
+          ],
+          [
+            "EQ",
+            "approval_25_percent",
+            true
+          ]
+        ],
+        [
+          "AND",
+          [
+            "GT",
+            "shareholding_percent",
+            50.0
+          ],
+          [
+            "EQ",
+            "approval_50_percent",
+            true
+          ]
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:related_persons_inclusive",
+    "desc": "第三人以信託、委任等方式持股應併入同一關係人範圍",
+    "expr": [
+      "EQ",
+      "related_persons_inclusive",
+      [
+        "EQ",
+        "third_party_trust_included_in_related_persons",
+        true
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:approval_qualification_and_documents",
+    "desc": "申請核准應具備適格條件及檢附書件等由主管機關定之",
+    "expr": [
+      "EQ",
+      "approval_qualification_and_documents",
+      [
+        "EQ",
+        "compliance_with_approval_requirements",
+        true
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:shareholding_over_10_percent_pledge_restriction",
+    "desc": "持股超過10%不得將股票設定質權予子公司，例外於轉換前原質權存續期限內不適用",
+    "expr": [
+      "EQ",
+      "shareholding_over_10_percent_pledge_restriction",
+      [
+        "IMPLIES",
+        [
+          "GT",
+          "shareholding_percent",
+          10.0
+        ],
+        [
+          "OR",
+          [
+            "AND",
+            [
+              "EQ",
+              "is_before_conversion",
+              true
+            ],
+            [
+              "EQ",
+              "original_pledge_valid",
+              true
+            ]
+          ],
+          [
+            "NOT",
+            [
+              "EQ",
+              "pledge_to_subsidiary",
+              true
+            ]
+          ]
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:holding_without_qualification_no_increase",
+    "desc": "不符適格條件者得繼續持有但不得增加持股",
+    "expr": [
+      "EQ",
+      "holding_without_qualification_no_increase",
+      [
+        "IMPLIES",
+        [
+          "NOT",
+          [
+            "EQ",
+            "meets_qualification_conditions",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "GT",
+            "shareholding_percent_change",
+            0.0
+          ]
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:approval_deemed_after_15_business_days",
+    "desc": "主管機關15營業日內未反對視為核准",
+    "expr": [
+      "EQ",
+      "approval_deemed_after_15_business_days",
+      [
+        "IMPLIES",
+        [
+          "GE",
+          "business_days_since_application",
+          15
+        ],
+        [
+          "EQ",
+          "approval_rejected",
+          false
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:pre_2008_5_to_10_percent_declaration",
+    "desc": "修正施行前持股超過5%未超過10%者，應於6個月內申報",
+    "expr": [
+      "EQ",
+      "pre_2008_5_to_10_percent_declaration",
+      [
+        "IMPLIES",
+        [
+          "AND",
+          [
+            "GT",
+            "shareholding_percent_before_2008",
+            5.0
+          ],
+          [
+            "LE",
+            "shareholding_percent_before_2008",
+            10.0
+          ]
+        ],
+        [
+          "LE",
+          "days_since_2008_revision",
+          180
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:shareholding_exceeding_without_declaration_or_approval",
+    "desc": "未依規定申報或未經核准持股超過部分無表決權且須限期處分",
+    "expr": [
+      "EQ",
+      "shareholding_exceeding_without_declaration_or_approval",
+      [
+        "OR",
+        [
+          "AND",
+          [
+            "GT",
+            "shareholding_percent",
+            10.0
+          ],
+          [
+            "NOT",
+            [
+              "EQ",
+              "declaration_made",
+              true
+            ]
+          ]
+        ],
+        [
+          "AND",
+          [
+            "GT",
+            "shareholding_percent",
+            10.0
+          ],
+          [
+            "NOT",
+            [
+              "EQ",
+              "approval_granted",
+              true
+            ]
+          ]
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:disposition_within_deadline",
+    "desc": "違規持股超過部分須依主管機關期限處分",
+    "expr": [
+      "EQ",
+      "disposition_within_deadline",
+      [
+        "IMPLIES",
+        [
+          "EQ",
+          "shareholding_exceeding_without_declaration_or_approval",
+          true
+        ],
+        [
+          "LE",
+          "days_to_dispose_exceeding_shares",
+          "disposition_deadline"
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:violation_article_16_1_2_9",
+    "desc": "違反第16條第1、2、9項規定未申報或違反第16條第7項但書規定增加持股",
+    "expr": [
+      "EQ",
+      "violation_article_16_1_2_9",
+      [
+        "OR",
+        [
+          "NOT",
+          [
+            "EQ",
+            "declaration_made_article_16_1",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "declaration_made_article_16_2",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "declaration_made_article_16_9",
+            true
+          ]
+        ],
+        [
+          "AND",
+          [
+            "EQ",
+            "violation_article_16_7_exception",
+            true
+          ],
+          [
+            "GT",
+            "shareholding_percent_change",
+            0.0
+          ]
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "meta:penalty_default_false",
+    "desc": "預設不處罰",
+    "expr": [
+      "EQ",
+      "penalty",
+      false
+    ],
+    "weight": 0,
+    "domain": "meta"
+  },
+  {
+    "id": "meta:penalty_conditions",
+    "desc": "處罰條件：違反第16條相關申報、核准、持股限制及處分規定時處罰",
+    "expr": [
+      "EQ",
+      "penalty",
+      [
+        "OR",
+        [
+          "NOT",
+          [
+            "EQ",
+            "shareholding_over_10_percent_declaration_at_conversion",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "shareholding_over_5_percent_declaration_after_establishment",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "shareholding_change_over_1_percent_declaration",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "shareholding_over_thresholds_prior_approval",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "approval_qualification_and_documents",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "shareholding_over_10_percent_pledge_restriction",
+            true
+          ]
+        ],
+        [
+          "AND",
+          [
+            "NOT",
+            [
+              "EQ",
+              "holding_without_qualification_no_increase",
+              true
+            ]
+          ],
+          [
+            "GT",
+            "shareholding_percent_change",
+            0.0
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "approval_deemed_after_15_business_days",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "pre_2008_5_to_10_percent_declaration",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "disposition_within_deadline",
+            true
+          ]
+        ],
+        [
+          "EQ",
+          "violation_article_16_1_2_9",
+          true
+        ]
+      ]
+    ],
+    "weight": 0,
+    "domain": "meta"
+  }
+]

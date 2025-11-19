@@ -1,0 +1,22 @@
+{
+  "violation_flag": true,
+  "correction_given": true,
+  "improvement_deadline_set": true,
+  "correction_ordered": true,
+  "remove_or_suspend_director_supervisor": true,
+  "penalty_measures": true,
+  "notify_moe_on_remove_director_supervisor": true,
+  "moe_notified_to_revoke_registration": true,
+  "revoke_statutory_resolution": false,
+  "suspend_subsidiary_business": false,
+  "remove_manager_or_staff": false,
+  "dispose_subsidiary_shares": false,
+  "revoke_permit": false,
+  "other_necessary_measures": false,
+  "dispose_shares_and_deregister_after_revoke_permit": false,
+  "dispose_shares_within_deadline": false,
+  "reduce_directors_to_meet_requirements": false,
+  "forbid_use_fhc_name_and_change_registration": false,
+  "liquidation_ordered": false,
+  "penalty": false
+}

@@ -1,0 +1,17 @@
+{
+  "own_capital": 111.09,
+  "risk_capital": 100.0,
+  "net_worth": 2.97,
+  "net_worth_ratio_prev1": 2.97,
+  "net_worth_ratio_prev2": 2.97,
+  "improvement_plan_submitted": true,
+  "improvement_plan_executed": false,
+  "asset_disposal_approved": false,
+  "asset_disposed": false,
+  "branch_reduction": false,
+  "credit_restriction": true,
+  "responsible_person_compensation_reduced": false,
+  "responsible_person_removed": false,
+  "responsible_person_suspended": false,
+  "special_disposition_149_3_1": false
+}

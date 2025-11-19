@@ -1,0 +1,247 @@
+[
+  {
+    "name": "board_compliance_with_article4",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "capital_percentage",
+    "type": "Real",
+    "unit": "%",
+    "domain": {
+      "min": -100,
+      "max": 1000
+    },
+    "source": "default"
+  },
+  {
+    "name": "company_dissolved_and_liquidated",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "controlled_shareholding",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "correction_and_improvement_ordered",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "correction_ordered",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "direct_or_indirect_board_majority",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "dispose_shares_and_dissolve",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "dispose_subsidiary_shares",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "established_under_fhc_law",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "external_financial_reporting_compliance",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "fhc_or_subsidiary_share_percentage",
+    "type": "Real",
+    "unit": "%",
+    "domain": {
+      "min": -100,
+      "max": 1000
+    },
+    "source": "default"
+  },
+  {
+    "name": "financial_holding_company",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "financial_institution",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "gaap_compliance",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "has_violation",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "internal_control_objectives_met",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "is_bank",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "is_bank_subsidiary",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "is_insurance_company",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "is_insurance_subsidiary",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "is_other_subsidiary",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "is_securities_firm",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "is_securities_subsidiary",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "legal_and_regulatory_compliance",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "major_shareholder",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "moe_notification_done",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "name_change_completed",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "natural_person_and_spouse_and_minor_children_share_percentage",
+    "type": "Real",
+    "unit": "%",
+    "domain": {
+      "min": -100,
+      "max": 1000
+    },
+    "source": "default"
+  },
+  {
+    "name": "notify_moe_on_removal",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "operational_effectiveness_and_efficiency",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "other_necessary_measures",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "penalty",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "penalty_measures_taken",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "proper_transaction_approval",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "remove_manager_or_staff",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "remove_or_suspend_director_supervisor",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "reporting_reliability_and_compliance",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "revoke_permit",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "revoke_statutory_resolution",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "shares_disposed_within_deadline",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "subsidiary",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "suspend_subsidiary_business",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "violation_occurred",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "voting_shares_percentage",
+    "type": "Real",
+    "unit": "%",
+    "domain": {
+      "min": -100,
+      "max": 1000
+    },
+    "source": "default"
+  }
+]
