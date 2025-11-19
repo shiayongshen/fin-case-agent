@@ -1,0 +1,12 @@
+{
+  "reinsurance_confirmation_obtained_before_effective": false,
+  "reinsurance_written_delegation_obtained": true,
+  "violated_165_1_or_163_5": true,
+  "violation_165_1_or_163_5": true,
+  "violation_any": true,
+  "penalty_imposed": true,
+  "penalty": true,
+  "broker_reinsurance_confirmation_obtained_before_effective": false,
+  "broker_reinsurance_conditions_consistent": false,
+  "broker_reinsurance_confirmation_ok": false
+}

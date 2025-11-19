@@ -1,0 +1,13 @@
+{
+  "capital_adequacy_ratio": 45.0,
+  "net_worth": -100.0,
+  "net_worth_ratio": 1.5,
+  "capital_plan_completed": false,
+  "improvement_plan_submitted": false,
+  "improvement_plan_executed": false,
+  "improvement_plan_approved": false,
+  "improvement_after_counseling": false,
+  "accelerated_deterioration": false,
+  "level_3_measures_executed": false,
+  "level_4_measures_executed": false
+}

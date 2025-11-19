@@ -1,0 +1,172 @@
+[
+  {
+    "name": "client_data_kept_confidential",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "confidentiality_maintained",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "duties_fulfilled_with_diligence_and_loyalty",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "fraudulent_or_misleading_acts",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "improper_account_transfer",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "improper_fee_or_benefit_handling",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "improper_promotion_or_benefit_provision",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "improper_public_recommendation_or_forecast",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "insider_information_leaked",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "internal_control_defined_and_executed",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "internal_control_defined_in_system",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "internal_control_executed",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "internal_control_recorded_and_retained",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "internal_control_records_retained",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "internal_control_records_retention_period_years",
+    "type": "Int",
+    "unit": "days",
+    "domain": {
+      "min": 0,
+      "max": 7
+    },
+    "source": "default"
+  },
+  {
+    "name": "investment_analysis_has_reasonable_basis",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "investment_analysis_reasonable",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "investment_decision_based_on_analysis",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "investment_decision_recorded",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "investment_execution_recorded",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "investment_monthly_reviewed",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "investment_review_submitted_monthly",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "market_manipulation_or_investor_harm",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "other_acts_harming_investors_or_business",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "penalty",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "personnel_qualifications_and_conduct_compliant",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "personnel_qualifications_compliant",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "prohibited_behaviors_absent",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "responsible_persons_duties_fulfilled",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "self_dealing_or_conflict_of_interest",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "unauthorized_securities_investment_agent",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "unreasonable_commission_or_nonprofessional_recruitment",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "vote_proxy_trading_for_benefit",
+    "type": "Bool",
+    "source": "default"
+  }
+]

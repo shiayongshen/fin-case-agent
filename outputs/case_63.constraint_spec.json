@@ -1,0 +1,309 @@
+[
+  {
+    "id": "insurance:license_and_guarantee_required",
+    "desc": "保險代理人、經紀人、公證人須經主管機關許可，繳存保證金並投保相關保險，領有執業證照後始得經營或執行業務",
+    "expr": [
+      "EQ",
+      "license_and_guarantee_required",
+      [
+        "AND",
+        [
+          "EQ",
+          "license_permitted",
+          true
+        ],
+        [
+          "GE",
+          "guarantee_deposit_amount",
+          "guarantee_minimum_amount"
+        ],
+        [
+          "EQ",
+          "relevant_insurance_subscribed",
+          true
+        ],
+        [
+          "EQ",
+          "practice_certificate_held",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance"
+  },
+  {
+    "id": "insurance:relevant_insurance_type",
+    "desc": "相關保險種類依身份區分：保險代理人、公證人為責任保險；保險經紀人為責任保險及保證保險",
+    "expr": [
+      "EQ",
+      "relevant_insurance_type_ok",
+      [
+        "OR",
+        [
+          "AND",
+          [
+            "EQ",
+            "agent_or_notary",
+            true
+          ],
+          [
+            "EQ",
+            "insurance_type",
+            "liability"
+          ]
+        ],
+        [
+          "AND",
+          [
+            "EQ",
+            "broker",
+            true
+          ],
+          [
+            "OR",
+            [
+              "EQ",
+              "insurance_type",
+              "liability"
+            ],
+            [
+              "EQ",
+              "insurance_type",
+              "guarantee"
+            ]
+          ]
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance"
+  },
+  {
+    "id": "insurance:minimum_guarantee_amount_set",
+    "desc": "主管機關依經營業務範圍及規模定最低繳存保證金及投保相關保險金額及實施方式",
+    "expr": [
+      "EQ",
+      "minimum_guarantee_amount_set",
+      [
+        "EQ",
+        "guarantee_minimum_amount_set_by_authority",
+        true
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance"
+  },
+  {
+    "id": "insurance:management_rules_set",
+    "desc": "主管機關定保險代理人、經紀人、公證人資格取得、申請許可條件、程序、文件、董事監察人經理人資格、解任事由、分支機構條件、財務業務管理、教育訓練、廢止許可及其他管理規則",
+    "expr": [
+      "EQ",
+      "management_rules_set",
+      [
+        "EQ",
+        "management_rules_defined_by_authority",
+        true
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance"
+  },
+  {
+    "id": "insurance:bank_permitted_to_operate",
+    "desc": "銀行經主管機關許可擇一兼營保險代理人或保險經紀人業務，並分別準用相關規定",
+    "expr": [
+      "EQ",
+      "bank_permitted_to_operate",
+      [
+        "AND",
+        [
+          "EQ",
+          "bank_permit_granted",
+          true
+        ],
+        [
+          "OR",
+          [
+            "EQ",
+            "bank_operate_as_agent",
+            true
+          ],
+          [
+            "EQ",
+            "bank_operate_as_broker",
+            true
+          ]
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance"
+  },
+  {
+    "id": "insurance:broker_duty_of_care_and_fidelity",
+    "desc": "保險經紀人應以善良管理人注意義務洽訂保險契約並負忠實義務",
+    "expr": [
+      "EQ",
+      "broker_duty_of_care_and_fidelity",
+      [
+        "AND",
+        [
+          "EQ",
+          "broker_exercise_duty_of_care",
+          true
+        ],
+        [
+          "EQ",
+          "broker_fulfill_fidelity_duty",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance"
+  },
+  {
+    "id": "insurance:broker_provide_written_report_and_disclose_fee",
+    "desc": "保險經紀人洽訂保險契約前，於主管機關指定範圍內主動提供書面分析報告，收取報酬者明確告知報酬標準",
+    "expr": [
+      "EQ",
+      "broker_report_and_fee_disclosure_ok",
+      [
+        "AND",
+        [
+          "EQ",
+          "broker_provide_written_report",
+          true
+        ],
+        [
+          "IMPLIES",
+          [
+            "EQ",
+            "broker_charge_fee",
+            true
+          ],
+          [
+            "EQ",
+            "broker_disclose_fee_standard",
+            true
+          ]
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance"
+  },
+  {
+    "id": "insurance:violation_financial_or_business_management",
+    "desc": "違反第163條第4項管理規則中財務或業務管理規定",
+    "expr": [
+      "EQ",
+      "violation_financial_or_business_management",
+      [
+        "EQ",
+        "violate_financial_or_business_management_rule",
+        true
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance"
+  },
+  {
+    "id": "insurance:violation_broker_duty",
+    "desc": "違反第163條第7項規定",
+    "expr": [
+      "EQ",
+      "violation_broker_duty",
+      [
+        "EQ",
+        "violate_broker_duty_rule",
+        true
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance"
+  },
+  {
+    "id": "insurance:violation_165_1_or_163_5",
+    "desc": "違反第165條第1項或第163條第5項準用規定",
+    "expr": [
+      "EQ",
+      "violation_165_1_or_163_5",
+      [
+        "EQ",
+        "violate_165_1_or_163_5_rule",
+        true
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance"
+  },
+  {
+    "id": "insurance:correction_or_penalty",
+    "desc": "違反相關規定應限期改正或處罰罰鍰，情節重大者廢止許可並註銷執業證照",
+    "expr": [
+      "EQ",
+      "correction_or_penalty_required",
+      [
+        "OR",
+        [
+          "EQ",
+          "violation_financial_or_business_management",
+          true
+        ],
+        [
+          "EQ",
+          "violation_broker_duty",
+          true
+        ],
+        [
+          "EQ",
+          "violation_165_1_or_163_5",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance"
+  },
+  {
+    "id": "meta:penalty_default_false",
+    "desc": "預設不處罰",
+    "expr": [
+      "EQ",
+      "penalty",
+      false
+    ],
+    "weight": 0,
+    "domain": "meta"
+  },
+  {
+    "id": "meta:penalty_conditions",
+    "desc": "處罰條件：違反第163條第4項財務或業務管理規定、第163條第7項規定，或違反第165條第1項或第163條第5項準用規定時處罰",
+    "expr": [
+      "EQ",
+      "penalty",
+      [
+        "OR",
+        [
+          "EQ",
+          "violation_financial_or_business_management",
+          true
+        ],
+        [
+          "EQ",
+          "violation_broker_duty",
+          true
+        ],
+        [
+          "EQ",
+          "violation_165_1_or_163_5",
+          true
+        ]
+      ]
+    ],
+    "weight": 0,
+    "domain": "meta"
+  }
+]

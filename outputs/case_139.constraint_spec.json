@@ -1,0 +1,664 @@
+[
+  {
+    "id": "insurance_broker:internal_control_segregation",
+    "desc": "經紀人公司內部控制制度及處理程序應區隔且無利益衝突",
+    "expr": [
+      "EQ",
+      "internal_control_segregation_ok",
+      [
+        "AND",
+        [
+          "EQ",
+          "internal_control_segregation_established",
+          true
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "conflict_of_interest",
+            true
+          ]
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance_broker"
+  },
+  {
+    "id": "insurance_broker:follow_ethics_and_self_regulation",
+    "desc": "遵循經紀人商業同業公會執業道德及自律規範",
+    "expr": [
+      "EQ",
+      "ethics_and_self_regulation_ok",
+      [
+        "EQ",
+        "follow_ethics_and_self_regulation",
+        true
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance_broker"
+  },
+  {
+    "id": "insurance_broker:reinsurance_written_delegation",
+    "desc": "經營再保險經紀業務應取得原保險人書面委任",
+    "expr": [
+      "EQ",
+      "reinsurance_written_delegation_ok",
+      [
+        "EQ",
+        "reinsurance_written_delegation_obtained",
+        true
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance_broker"
+  },
+  {
+    "id": "insurance_broker:reinsurance_credit_rating_and_consent",
+    "desc": "再保險人信用評等等級符合規定且經原保險人同意",
+    "expr": [
+      "EQ",
+      "reinsurance_credit_and_consent_ok",
+      [
+        "AND",
+        [
+          "GE",
+          "reinsurance_credit_rating",
+          "required_credit_rating"
+        ],
+        [
+          "EQ",
+          "reinsurance_consent_obtained",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance_broker"
+  },
+  {
+    "id": "insurance_broker:disclose_dual_agency",
+    "desc": "同時受託辦理保險經紀及再保險經紀業務事項載明於委任契約或文件",
+    "expr": [
+      "EQ",
+      "dual_agency_disclosed",
+      [
+        "EQ",
+        "dual_agency_disclosed_in_contract",
+        true
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance_broker"
+  },
+  {
+    "id": "insurance_broker:reinsurance_confirmation_before_effective",
+    "desc": "原保險契約生效前取得再保險人確認認受文件",
+    "expr": [
+      "EQ",
+      "reinsurance_confirmation_before_effective_ok",
+      [
+        "EQ",
+        "reinsurance_confirmation_obtained_before_effective",
+        true
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance_broker"
+  },
+  {
+    "id": "insurance_broker:deliver_reinsurance_info_before_effective",
+    "desc": "原保險契約生效前交付再保險人相關資訊予原保險人",
+    "expr": [
+      "EQ",
+      "reinsurance_info_delivered_before_effective",
+      [
+        "EQ",
+        "reinsurance_info_delivered",
+        true
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance_broker"
+  },
+  {
+    "id": "insurance_broker:deliver_signed_contract_within_60_days",
+    "desc": "再保險契約生效日起60日內交付再保險人簽署契約文件",
+    "expr": [
+      "EQ",
+      "signed_contract_delivered_within_60_days",
+      [
+        "EQ",
+        "signed_contract_delivered",
+        true
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance_broker"
+  },
+  {
+    "id": "insurance_broker:deliver_complete_contract_within_6_months",
+    "desc": "合約再保險於生效日起6個月內交付完整再保險契約書面文件",
+    "expr": [
+      "EQ",
+      "complete_contract_delivered_within_6_months",
+      [
+        "EQ",
+        "complete_contract_delivered",
+        true
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance_broker"
+  },
+  {
+    "id": "insurance_broker:retain_reinsurance_documents",
+    "desc": "完整保存再保險相關證明文件供主管機關查核",
+    "expr": [
+      "EQ",
+      "reinsurance_documents_retained",
+      [
+        "EQ",
+        "reinsurance_documents_saved",
+        true
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance_broker"
+  },
+  {
+    "id": "insurance_broker:foreign_broker_qualification",
+    "desc": "委任國外經紀人安排再保險業務符合資格條件",
+    "expr": [
+      "EQ",
+      "foreign_broker_qualified",
+      [
+        "AND",
+        [
+          "EQ",
+          "foreign_broker_approved_by_home_authority",
+          true
+        ],
+        [
+          "EQ",
+          "foreign_broker_professional_liability_insurance_valid",
+          true
+        ],
+        [
+          "GE",
+          "foreign_broker_per_accident_limit_usd",
+          5000000.0
+        ],
+        [
+          "GE",
+          "foreign_broker_aggregate_limit_usd",
+          10000000.0
+        ],
+        [
+          "LE",
+          "foreign_broker_deductible_rate",
+          5.0
+        ],
+        [
+          "EQ",
+          "foreign_broker_insurance_period_uninterrupted",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance_broker"
+  },
+  {
+    "id": "insurance_broker:notify_original_insurer_after_effective",
+    "desc": "再保險合約生效後通知原保險人重大財務業務資訊",
+    "expr": [
+      "EQ",
+      "notify_original_insurer_after_effective",
+      [
+        "EQ",
+        "notify_major_info_after_effective",
+        true
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance_broker"
+  },
+  {
+    "id": "insurance_reinsurance:eligible_reinsurance_target",
+    "desc": "符合適格再保險分出對象條件",
+    "expr": [
+      "EQ",
+      "eligible_reinsurance_target",
+      [
+        "OR",
+        [
+          "EQ",
+          "domestic_reinsurance_approved",
+          true
+        ],
+        [
+          "EQ",
+          "foreign_reinsurance_approved",
+          true
+        ],
+        [
+          "GE",
+          "foreign_reinsurance_credit_rating",
+          "required_credit_rating"
+        ],
+        [
+          "EQ",
+          "legal_reinsurance_entity",
+          true
+        ],
+        [
+          "EQ",
+          "other_approved_reinsurance_entity",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance_reinsurance"
+  },
+  {
+    "id": "insurance_reinsurance:non_eligible_reinsurance_target",
+    "desc": "不符合適格再保險分出對象",
+    "expr": [
+      "EQ",
+      "non_eligible_reinsurance_target",
+      [
+        "NOT",
+        [
+          "EQ",
+          "eligible_reinsurance_target",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance_reinsurance"
+  },
+  {
+    "id": "property_insurance:temporary_non_proportional_reinsurance_requirements",
+    "desc": "非比例性臨時再保險分出應符合國際信用評等及國內再保險業參與比例規定",
+    "expr": [
+      "EQ",
+      "temporary_non_proportional_reinsurance_ok",
+      [
+        "OR",
+        [
+          "GE",
+          "foreign_reinsurance_credit_rating",
+          "required_credit_rating"
+        ],
+        [
+          "EQ",
+          "domestic_reinsurance_approved",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "property_insurance"
+  },
+  {
+    "id": "property_insurance:temporary_non_proportional_reinsurance_minimum_participation",
+    "desc": "國內財產保險業承接部分業務比例達30%以上",
+    "expr": [
+      "EQ",
+      "domestic_participation_sufficient",
+      [
+        "GE",
+        "domestic_participation_ratio",
+        30.0
+      ]
+    ],
+    "weight": 1,
+    "domain": "property_insurance"
+  },
+  {
+    "id": "property_insurance:temporary_non_proportional_reinsurance_compliance",
+    "desc": "非比例性臨時再保險分出符合信用評等及國內參與比例規定",
+    "expr": [
+      "EQ",
+      "temporary_non_proportional_reinsurance_compliant",
+      [
+        "AND",
+        [
+          "EQ",
+          "temporary_non_proportional_reinsurance_ok",
+          true
+        ],
+        [
+          "EQ",
+          "domestic_participation_sufficient",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "property_insurance"
+  },
+  {
+    "id": "property_insurance:temporary_non_proportional_reinsurance_non_compliance",
+    "desc": "非比例性臨時再保險分出不符合規定",
+    "expr": [
+      "EQ",
+      "temporary_non_proportional_reinsurance_non_compliant",
+      [
+        "NOT",
+        [
+          "EQ",
+          "temporary_non_proportional_reinsurance_compliant",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "property_insurance"
+  },
+  {
+    "id": "insurance_reinsurance:reinsurance_target_qualification",
+    "desc": "分出對象符合營業登記或信用評等等級或主管機關核准",
+    "expr": [
+      "EQ",
+      "reinsurance_target_qualified",
+      [
+        "OR",
+        [
+          "EQ",
+          "registered_professional_reinsurance",
+          true
+        ],
+        [
+          "GE",
+          "foreign_reinsurance_credit_rating",
+          "required_credit_rating"
+        ],
+        [
+          "EQ",
+          "other_approved_reinsurance_entity",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance_reinsurance"
+  },
+  {
+    "id": "insurance_reinsurance:reinsurance_risk_management_plan_compliance",
+    "desc": "配合再保險風險管理計畫安排分出並取得確認認受文件",
+    "expr": [
+      "EQ",
+      "risk_management_plan_compliant",
+      [
+        "AND",
+        [
+          "EQ",
+          "risk_management_plan_arranged",
+          true
+        ],
+        [
+          "OR",
+          [
+            "EQ",
+            "reinsurance_confirmation_obtained_before_effective",
+            true
+          ],
+          [
+            "EQ",
+            "exempted_by_risk_management_standards",
+            true
+          ]
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance_reinsurance"
+  },
+  {
+    "id": "insurance_reinsurance:broker_reinsurance_confirmation_and_check",
+    "desc": "保險經紀人於原保險契約生效前取得確認認受文件並檢核一致性",
+    "expr": [
+      "EQ",
+      "broker_reinsurance_confirmation_ok",
+      [
+        "AND",
+        [
+          "EQ",
+          "broker_reinsurance_confirmation_obtained_before_effective",
+          true
+        ],
+        [
+          "EQ",
+          "broker_reinsurance_conditions_consistent",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance_reinsurance"
+  },
+  {
+    "id": "insurance_reinsurance:broker_foreign_broker_qualification_check",
+    "desc": "委任國外保險經紀人安排再保險業務符合資格條件",
+    "expr": [
+      "EQ",
+      "broker_foreign_broker_qualified",
+      [
+        "AND",
+        [
+          "EQ",
+          "foreign_broker_approved_by_home_authority",
+          true
+        ],
+        [
+          "EQ",
+          "foreign_broker_professional_liability_insurance_valid",
+          true
+        ],
+        [
+          "GE",
+          "foreign_broker_per_accident_limit_usd",
+          5000000.0
+        ],
+        [
+          "GE",
+          "foreign_broker_aggregate_limit_usd",
+          10000000.0
+        ],
+        [
+          "LE",
+          "foreign_broker_deductible_rate",
+          5.0
+        ],
+        [
+          "EQ",
+          "foreign_broker_insurance_period_uninterrupted",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance_reinsurance"
+  },
+  {
+    "id": "insurance_reinsurance:deliver_signed_contract_within_60_days",
+    "desc": "再保險契約生效日起60日內交付再保險人簽署契約文件",
+    "expr": [
+      "EQ",
+      "deliver_signed_contract_within_60_days",
+      [
+        "EQ",
+        "signed_contract_delivered",
+        true
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance_reinsurance"
+  },
+  {
+    "id": "insurance_reinsurance:deliver_complete_contract_within_6_months",
+    "desc": "合約再保險於生效日起6個月內交付完整再保險契約書面文件",
+    "expr": [
+      "EQ",
+      "deliver_complete_contract_within_6_months",
+      [
+        "EQ",
+        "complete_contract_delivered",
+        true
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance_reinsurance"
+  },
+  {
+    "id": "insurance_reinsurance:retain_documents_min_5_years",
+    "desc": "妥善保存再保險相關文件保存期間不得低於保險責任終了後五年",
+    "expr": [
+      "EQ",
+      "documents_retained_min_5_years",
+      [
+        "EQ",
+        "documents_saved_min_5_years",
+        true
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance_reinsurance"
+  },
+  {
+    "id": "insurance:violation_of_management_rules",
+    "desc": "違反保險法第163條相關管理規則財務或業務管理規定",
+    "expr": [
+      "EQ",
+      "violation_management_rules",
+      [
+        "EQ",
+        "violated_management_rules",
+        true
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance"
+  },
+  {
+    "id": "insurance:violation_of_163_7",
+    "desc": "違反保險法第163條第七項規定",
+    "expr": [
+      "EQ",
+      "violation_163_7",
+      [
+        "EQ",
+        "violated_163_7",
+        true
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance"
+  },
+  {
+    "id": "insurance:violation_of_165_1_or_163_5",
+    "desc": "違反保險法第165條第一項或第163條第五項準用規定",
+    "expr": [
+      "EQ",
+      "violation_165_1_or_163_5",
+      [
+        "EQ",
+        "violated_165_1_or_163_5",
+        true
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance"
+  },
+  {
+    "id": "insurance:violation_any",
+    "desc": "違反任一相關規定",
+    "expr": [
+      "EQ",
+      "violation_any",
+      [
+        "OR",
+        [
+          "EQ",
+          "violation_management_rules",
+          true
+        ],
+        [
+          "EQ",
+          "violation_163_7",
+          true
+        ],
+        [
+          "EQ",
+          "violation_165_1_or_163_5",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance"
+  },
+  {
+    "id": "insurance:penalty_imposed",
+    "desc": "違反規定時應限期改正或處罰",
+    "expr": [
+      "EQ",
+      "penalty_imposed",
+      [
+        "OR",
+        [
+          "EQ",
+          "violation_any",
+          true
+        ],
+        [
+          "EQ",
+          "serious_violation",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance"
+  },
+  {
+    "id": "meta:penalty_default_false",
+    "desc": "預設不處罰",
+    "expr": [
+      "EQ",
+      "penalty",
+      false
+    ],
+    "weight": 0,
+    "domain": "meta"
+  },
+  {
+    "id": "meta:penalty_conditions",
+    "desc": "處罰條件：違反任一相關規定時處罰",
+    "expr": [
+      "EQ",
+      "penalty",
+      [
+        "OR",
+        [
+          "EQ",
+          "violation_any",
+          true
+        ],
+        [
+          "EQ",
+          "serious_violation",
+          true
+        ]
+      ]
+    ],
+    "weight": 0,
+    "domain": "meta"
+  }
+]

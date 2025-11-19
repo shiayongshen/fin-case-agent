@@ -1,0 +1,303 @@
+[
+  {
+    "name": "academic_performance_good",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "annual_report_audited",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "annual_report_board_approved",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "annual_report_submission_months_after_year_end",
+    "type": "Int",
+    "unit": "months",
+    "source": "default"
+  },
+  {
+    "name": "annual_report_supervisor_approved",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "approval_reported_to_authority",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "asset_insufficient_liability_improvement_required",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "assets",
+    "type": "Real",
+    "source": "default"
+  },
+  {
+    "name": "business_guarantee_deposit_amount",
+    "type": "Real",
+    "source": "default"
+  },
+  {
+    "name": "business_guarantee_deposit_change_requires_approval",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "business_guarantee_deposit_conditions",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "business_guarantee_deposit_required",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "department_and_staffing_requirements",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "department_head_adequate_and_qualified",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "deposit_amount_withdrawn",
+    "type": "Real",
+    "source": "default"
+  },
+  {
+    "name": "deposit_exempted_by_fiduciary_management",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "deposit_exempted_by_overseas_fund",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "deposit_institution_changed",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "deposit_pledge_set",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "deposit_provide_guarantee",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "deposit_single_financial_institution",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "deposit_type_bank",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "deposit_type_cash",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "deposit_type_financial_bond",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "deposit_type_government_bond",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "financial_accounting_department_established",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "financial_report_annual_submission",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "general_manager_count",
+    "type": "Int",
+    "source": "default"
+  },
+  {
+    "name": "general_manager_qualification",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "general_manager_required",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "guarantee_deposit_amount",
+    "type": "Real",
+    "source": "default"
+  },
+  {
+    "name": "has_approved_college_degree",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "has_securities_analyst_qualification",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "improvement_ordered_by_authority",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "improvement_period_months",
+    "type": "Int",
+    "unit": "months",
+    "source": "default"
+  },
+  {
+    "name": "investment_research_department_established",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "liabilities",
+    "type": "Real",
+    "source": "default"
+  },
+  {
+    "name": "license_duration_months",
+    "type": "Int",
+    "unit": "months",
+    "source": "default"
+  },
+  {
+    "name": "manager_adequate_and_qualified",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "net_asset_value_below_par_improvement_required",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "net_asset_value_below_par_restriction",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "net_asset_value_per_share",
+    "type": "Real",
+    "source": "default"
+  },
+  {
+    "name": "no_other_equivalent_responsibility",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "other_qualifications_sufficient",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "paid_in_capital",
+    "type": "Real",
+    "source": "default"
+  },
+  {
+    "name": "par_value_per_share",
+    "type": "Real",
+    "source": "default"
+  },
+  {
+    "name": "penalty",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "professional_investment_experience_years",
+    "type": "Int",
+    "unit": "years",
+    "source": "default"
+  },
+  {
+    "name": "reopen_application_approved",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "reopen_application_submitted",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "responsible_personnel_qualification_met",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "staff_adequate_and_qualified",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "stop_business_application_once",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "stop_business_application_submitted",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "stop_business_approval_limit",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "stop_business_duration_months",
+    "type": "Int",
+    "unit": "months",
+    "source": "default"
+  },
+  {
+    "name": "stop_business_permit_revoked_if_no_reopen",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "stop_business_permit_revoked_if_unapproved_stop",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "unapproved_stop_duration_months",
+    "type": "Int",
+    "unit": "months",
+    "source": "default"
+  }
+]

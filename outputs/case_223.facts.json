@@ -1,0 +1,16 @@
+{
+  "capital_adequacy_ratio": 40.0,
+  "net_worth": -1000000,
+  "net_worth_ratio": -10.0,
+  "net_worth_ratio_prev": -10.0,
+  "improvement_plan_submitted": true,
+  "improvement_plan_executed": false,
+  "article_149_3_1_measures_executed": false,
+  "branch_restriction_applied": true,
+  "responsible_person_removed": false,
+  "responsible_person_duty_suspended": false,
+  "special_asset_approval_obtained": false,
+  "special_asset_disposed": false,
+  "credit_restriction_applied": false,
+  "responsible_person_compensation_reduced": false
+}

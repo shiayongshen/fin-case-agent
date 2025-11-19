@@ -1,0 +1,826 @@
+[
+  {
+    "id": "insurance:agent_broker_not_permitted_without_license_and_guarantee",
+    "desc": "保險代理人、經紀人、公證人須經主管機關許可、繳存保證金並投保相關保險，且領有執業證照後始得經營或執行業務",
+    "expr": [
+      "EQ",
+      "agent_broker_not_permitted_without_license_and_guarantee",
+      [
+        "AND",
+        [
+          "EQ",
+          "license_permitted",
+          true
+        ],
+        [
+          "EQ",
+          "guarantee_deposited",
+          true
+        ],
+        [
+          "EQ",
+          "related_insurance_purchased",
+          true
+        ],
+        [
+          "EQ",
+          "license_held",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance"
+  },
+  {
+    "id": "insurance:related_insurance_type_correct",
+    "desc": "相關保險類型符合規定：代理人、公證人為責任保險；經紀人為責任保險及保證保險",
+    "expr": [
+      "EQ",
+      "related_insurance_type_correct",
+      [
+        "OR",
+        [
+          "AND",
+          [
+            "EQ",
+            "is_agent",
+            true
+          ],
+          [
+            "EQ",
+            "is_not_broker",
+            true
+          ],
+          [
+            "EQ",
+            "is_not_notary",
+            true
+          ],
+          [
+            "EQ",
+            "insurance_type",
+            "liability"
+          ]
+        ],
+        [
+          "AND",
+          [
+            "EQ",
+            "is_broker",
+            true
+          ],
+          [
+            "OR",
+            [
+              "EQ",
+              "insurance_type",
+              "liability"
+            ],
+            [
+              "EQ",
+              "insurance_type",
+              "guarantee"
+            ]
+          ]
+        ],
+        [
+          "AND",
+          [
+            "EQ",
+            "is_notary",
+            true
+          ],
+          [
+            "EQ",
+            "insurance_type",
+            "liability"
+          ]
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance"
+  },
+  {
+    "id": "insurance:broker_duty_of_care_and_fidelity",
+    "desc": "保險經紀人應以善良管理人注意義務及負忠實義務",
+    "expr": [
+      "EQ",
+      "broker_duty_of_care_and_fidelity",
+      [
+        "AND",
+        [
+          "EQ",
+          "broker_exercised_duty_of_care",
+          true
+        ],
+        [
+          "EQ",
+          "broker_fulfilled_fiduciary_duty",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance"
+  },
+  {
+    "id": "insurance:broker_provide_written_report_and_disclose_fee",
+    "desc": "保險經紀人於洽訂保險契約前，應主動提供書面分析報告，並明確告知報酬收取標準",
+    "expr": [
+      "EQ",
+      "broker_provide_written_report_and_disclose_fee",
+      [
+        "AND",
+        [
+          "EQ",
+          "written_analysis_report_provided",
+          true
+        ],
+        [
+          "IMPLIES",
+          [
+            "EQ",
+            "fee_charged",
+            true
+          ],
+          [
+            "EQ",
+            "fee_disclosed_clearly",
+            true
+          ]
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance"
+  },
+  {
+    "id": "insurance:broker_company_must_report_stop_resume_dissolve",
+    "desc": "經紀人公司停業、復業、解散應報主管機關核准並辦理登記",
+    "expr": [
+      "EQ",
+      "broker_company_must_report_stop_resume_dissolve",
+      [
+        "OR",
+        [
+          "EQ",
+          "broker_company_stop_reported",
+          true
+        ],
+        [
+          "EQ",
+          "broker_company_resume_reported",
+          true
+        ],
+        [
+          "EQ",
+          "broker_company_dissolve_reported",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance"
+  },
+  {
+    "id": "insurance:broker_company_stop_period_limit_and_extension",
+    "desc": "經紀人公司停業期間以一年為限，得申請一次展延，且應於屆滿前十五日提出",
+    "expr": [
+      "EQ",
+      "broker_company_stop_period_limit_and_extension",
+      [
+        "AND",
+        [
+          "LE",
+          "broker_company_stop_period_years",
+          1
+        ],
+        [
+          "IMPLIES",
+          [
+            "EQ",
+            "broker_company_extension_applied",
+            true
+          ],
+          [
+            "EQ",
+            "broker_company_extension_once",
+            true
+          ]
+        ],
+        [
+          "LE",
+          "days_before_stop_period_expiry_to_apply",
+          15
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance"
+  },
+  {
+    "id": "insurance:broker_company_must_appoint_broker_on_resume",
+    "desc": "經紀人公司復業時應依規定任用經紀人",
+    "expr": [
+      "EQ",
+      "broker_company_must_appoint_broker_on_resume",
+      [
+        "IMPLIES",
+        [
+          "EQ",
+          "broker_company_resume_reported",
+          true
+        ],
+        [
+          "EQ",
+          "broker_appointed_per_rule",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance"
+  },
+  {
+    "id": "insurance:broker_company_must_cancel_broker_license_on_stop_or_dissolve",
+    "desc": "經紀人公司停業或解散應繳銷所任用經紀人執業證照",
+    "expr": [
+      "EQ",
+      "broker_company_must_cancel_broker_license_on_stop_or_dissolve",
+      [
+        "IMPLIES",
+        [
+          "OR",
+          [
+            "EQ",
+            "broker_company_stop_reported",
+            true
+          ],
+          [
+            "EQ",
+            "broker_company_dissolve_reported",
+            true
+          ]
+        ],
+        [
+          "EQ",
+          "broker_license_canceled",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance"
+  },
+  {
+    "id": "insurance:broker_must_cancel_license_within_30_days_after_company_stop_dissolve_or_license_revoked",
+    "desc": "經紀人公司停業、解散或主管機關註銷公司執業證照後，受任用經紀人應於30日內辦理註銷登記",
+    "expr": [
+      "EQ",
+      "broker_must_cancel_license_within_30_days_after_company_stop_dissolve_or_license_revoked",
+      [
+        "IMPLIES",
+        [
+          "OR",
+          [
+            "EQ",
+            "broker_company_stop_reported",
+            true
+          ],
+          [
+            "EQ",
+            "broker_company_dissolve_reported",
+            true
+          ],
+          [
+            "EQ",
+            "broker_company_license_revoked",
+            true
+          ]
+        ],
+        [
+          "LE",
+          "days_to_cancel_broker_license",
+          30
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance"
+  },
+  {
+    "id": "insurance:broker_company_stop_or_dissolve_or_license_revoked_and_broker_not_canceled",
+    "desc": "經紀人公司停業、解散或主管機關註銷公司執業證照，未辦理繳銷經紀人執業證照",
+    "expr": [
+      "EQ",
+      "broker_company_stop_or_dissolve_or_license_revoked_and_broker_not_canceled",
+      [
+        "AND",
+        [
+          "OR",
+          [
+            "EQ",
+            "broker_company_stop_reported",
+            true
+          ],
+          [
+            "EQ",
+            "broker_company_dissolve_reported",
+            true
+          ],
+          [
+            "EQ",
+            "broker_company_license_revoked",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "broker_license_canceled",
+            true
+          ]
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance"
+  },
+  {
+    "id": "insurance:bank_must_report_stop_or_terminate_broker_business",
+    "desc": "銀行申請暫時停止或終止兼營保險經紀業務應報主管機關核准",
+    "expr": [
+      "EQ",
+      "bank_must_report_stop_or_terminate_broker_business",
+      [
+        "OR",
+        [
+          "EQ",
+          "bank_broker_stop_reported",
+          true
+        ],
+        [
+          "EQ",
+          "bank_broker_terminate_reported",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance"
+  },
+  {
+    "id": "insurance:bank_must_cancel_broker_license_on_stop_or_terminate",
+    "desc": "銀行暫時停止兼營保險經紀業務應繳銷經紀人執業證照，終止兼營保險經紀業務應繳銷經紀人及兼營保險經紀業務執業證照",
+    "expr": [
+      "EQ",
+      "bank_must_cancel_broker_license_on_stop_or_terminate",
+      [
+        "AND",
+        [
+          "IMPLIES",
+          [
+            "EQ",
+            "bank_broker_stop_reported",
+            true
+          ],
+          [
+            "EQ",
+            "broker_license_canceled",
+            true
+          ]
+        ],
+        [
+          "IMPLIES",
+          [
+            "EQ",
+            "bank_broker_terminate_reported",
+            true
+          ],
+          [
+            "AND",
+            [
+              "EQ",
+              "broker_license_canceled",
+              true
+            ],
+            [
+              "EQ",
+              "bank_broker_business_license_canceled",
+              true
+            ]
+          ]
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance"
+  },
+  {
+    "id": "insurance:bank_broker_stop_terminate_or_license_revoked_and_broker_not_canceled",
+    "desc": "銀行暫時停止、終止兼營保險經紀業務或主管機關註銷其許可，未辦理繳銷經紀人執業證照",
+    "expr": [
+      "EQ",
+      "bank_broker_stop_terminate_or_license_revoked_and_broker_not_canceled",
+      [
+        "AND",
+        [
+          "OR",
+          [
+            "EQ",
+            "bank_broker_stop_reported",
+            true
+          ],
+          [
+            "EQ",
+            "bank_broker_terminate_reported",
+            true
+          ],
+          [
+            "EQ",
+            "bank_broker_license_revoked",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "broker_license_canceled",
+            true
+          ]
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance"
+  },
+  {
+    "id": "insurance:individual_broker_education_training_hours",
+    "desc": "個人執業經紀人每年平均參加在職教育訓練16小時以上，且前二年每年平均法令課程時數不少於8小時",
+    "expr": [
+      "EQ",
+      "individual_broker_education_training_hours",
+      [
+        "AND",
+        [
+          "GE",
+          "avg_annual_onjob_training_hours",
+          16.0
+        ],
+        [
+          "GE",
+          "avg_annual_legal_course_hours_last_2_years",
+          8.0
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance"
+  },
+  {
+    "id": "insurance:compliance_officer_education_training_hours",
+    "desc": "法令遵循人員每年參加在職教育訓練15小時以上",
+    "expr": [
+      "EQ",
+      "compliance_officer_education_training_hours",
+      [
+        "GE",
+        "compliance_officer_training_hours",
+        15.0
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance"
+  },
+  {
+    "id": "insurance:broker_annual_education_training_for_fair_treatment_of_seniors",
+    "desc": "個人執業經紀人、經紀人公司或銀行任用經紀人每年應參加並通過公平對待65歲以上客戶相關教育訓練2小時",
+    "expr": [
+      "EQ",
+      "broker_annual_education_training_for_fair_treatment_of_seniors",
+      [
+        "EQ",
+        "fair_treatment_training_passed",
+        true
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance"
+  },
+  {
+    "id": "insurance:broker_not_participate_fair_treatment_training_restriction",
+    "desc": "未依規定參加並通過公平對待65歲以上客戶教育訓練者，次年度不得招攬65歲以上客戶，且所屬經紀人公司或銀行應取消該資格",
+    "expr": [
+      "EQ",
+      "broker_not_participate_fair_treatment_training_restriction",
+      [
+        "IMPLIES",
+        [
+          "NOT",
+          [
+            "EQ",
+            "fair_treatment_training_passed",
+            true
+          ]
+        ],
+        [
+          "AND",
+          [
+            "EQ",
+            "next_year_restriction_on_senior_clients",
+            true
+          ],
+          [
+            "EQ",
+            "broker_company_or_bank_cancel_qualification",
+            true
+          ]
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance"
+  },
+  {
+    "id": "insurance:property_insurance_reinsurance_rate_compliance",
+    "desc": "財產保險業承接再保險分入業務時，再保險費率應符合適足性及合理性並反映各項成本",
+    "expr": [
+      "EQ",
+      "property_insurance_reinsurance_rate_compliance",
+      [
+        "EQ",
+        "reinsurance_rate_adequate_and_reasonable",
+        true
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance"
+  },
+  {
+    "id": "insurance:property_insurance_retention_rate_proportional_reinsurance",
+    "desc": "財產保險業以比例性再保險方式安排分出時，自留費率不得低於再保險費率及出單費率",
+    "expr": [
+      "EQ",
+      "property_insurance_retention_rate_proportional_reinsurance",
+      [
+        "AND",
+        [
+          "GE",
+          "retention_rate",
+          "reinsurance_rate"
+        ],
+        [
+          "GE",
+          "retention_rate",
+          "policy_issuance_fee_rate"
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance"
+  },
+  {
+    "id": "insurance:property_insurance_retention_rate_nonproportional_reinsurance",
+    "desc": "財產保險業以非比例性再保險方式安排分出時，各自留層費率不得低於高層費率及同層加權平均再保險費率，且費率水準應合理",
+    "expr": [
+      "EQ",
+      "property_insurance_retention_rate_nonproportional_reinsurance",
+      [
+        "AND",
+        [
+          "GE",
+          "retention_rate_layer",
+          "higher_layer_rate"
+        ],
+        [
+          "GE",
+          "retention_rate_layer",
+          "weighted_avg_reinsurance_rate_same_layer"
+        ],
+        [
+          "EQ",
+          "rate_level_reasonable",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance"
+  },
+  {
+    "id": "insurance:property_insurance_no_temporary_reinsurance_after_temporary_reinsurance_out",
+    "desc": "財產保險業原簽單業務安排臨時再保險分出後，不得以任何臨時再保或分保方式承接該分出風險，航空保險、核能保險及專屬再保險業務除外",
+    "expr": [
+      "EQ",
+      "property_insurance_no_temporary_reinsurance_after_temporary_reinsurance_out",
+      [
+        "IMPLIES",
+        [
+          "AND",
+          [
+            "EQ",
+            "temporary_reinsurance_out_arranged",
+            true
+          ],
+          [
+            "NOT",
+            [
+              "OR",
+              [
+                "EQ",
+                "insurance_type",
+                "aviation"
+              ],
+              [
+                "EQ",
+                "insurance_type",
+                "nuclear"
+              ],
+              [
+                "EQ",
+                "insurance_type",
+                "exclusive_reinsurance"
+              ]
+            ]
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "temporary_reinsurance_in_arranged",
+            true
+          ]
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance"
+  },
+  {
+    "id": "insurance:property_insurance_reinsurance_rate_violation_penalty",
+    "desc": "財產保險業未符合再保險費率適足性及合理性者，依保險法第170條之一處分並由簽證精算人員於年度精算簽證報告中提出說明",
+    "expr": [
+      "EQ",
+      "property_insurance_reinsurance_rate_violation_penalty",
+      [
+        "NOT",
+        [
+          "EQ",
+          "property_insurance_reinsurance_rate_compliance",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "insurance"
+  },
+  {
+    "id": "meta:penalty_default_false",
+    "desc": "預設不處罰",
+    "expr": [
+      "EQ",
+      "penalty",
+      false
+    ],
+    "weight": 0,
+    "domain": "meta"
+  },
+  {
+    "id": "meta:penalty_conditions",
+    "desc": "處罰條件：違反保險代理人、經紀人、公證人許可、保證金、保險投保及執業證照規定，或違反經紀人公司及銀行相關停業、解散、執業證照繳銷規定，或未依規定參加教育訓練，或財產保險業再保險費率不符規定時處罰",
+    "expr": [
+      "EQ",
+      "penalty",
+      [
+        "OR",
+        [
+          "NOT",
+          [
+            "EQ",
+            "agent_broker_not_permitted_without_license_and_guarantee",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "related_insurance_type_correct",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "broker_duty_of_care_and_fidelity",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "broker_provide_written_report_and_disclose_fee",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "broker_company_must_report_stop_resume_dissolve",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "broker_company_stop_period_limit_and_extension",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "broker_company_must_appoint_broker_on_resume",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "broker_company_must_cancel_broker_license_on_stop_or_dissolve",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "broker_must_cancel_license_within_30_days_after_company_stop_dissolve_or_license_revoked",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "bank_must_report_stop_or_terminate_broker_business",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "bank_must_cancel_broker_license_on_stop_or_terminate",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "individual_broker_education_training_hours",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "compliance_officer_education_training_hours",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "broker_annual_education_training_for_fair_treatment_of_seniors",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "property_insurance_reinsurance_rate_compliance",
+            true
+          ]
+        ]
+      ]
+    ],
+    "weight": 0,
+    "domain": "meta"
+  }
+]

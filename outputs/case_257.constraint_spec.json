@@ -1,0 +1,824 @@
+[
+  {
+    "id": "fhc:subsidiary_business_scope_ok",
+    "desc": "子公司業務限於投資及對被投資事業之管理",
+    "expr": [
+      "EQ",
+      "subsidiary_business_scope_ok",
+      [
+        "AND",
+        [
+          "EQ",
+          "subsidiary_business_investment",
+          true
+        ],
+        [
+          "EQ",
+          "subsidiary_business_management",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:investment_approved",
+    "desc": "投資事業已獲主管機關核准",
+    "expr": [
+      "EQ",
+      "investment_approved",
+      [
+        "OR",
+        [
+          "EQ",
+          "invest_in_fhc",
+          true
+        ],
+        [
+          "EQ",
+          "invest_in_bank",
+          true
+        ],
+        [
+          "EQ",
+          "invest_in_bill_finance",
+          true
+        ],
+        [
+          "EQ",
+          "invest_in_credit_card",
+          true
+        ],
+        [
+          "EQ",
+          "invest_in_trust",
+          true
+        ],
+        [
+          "EQ",
+          "invest_in_insurance",
+          true
+        ],
+        [
+          "EQ",
+          "invest_in_securities",
+          true
+        ],
+        [
+          "EQ",
+          "invest_in_futures",
+          true
+        ],
+        [
+          "EQ",
+          "invest_in_venture_capital",
+          true
+        ],
+        [
+          "EQ",
+          "invest_in_foreign_financial_institution",
+          true
+        ],
+        [
+          "EQ",
+          "invest_in_other_related_financial",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:investment_without_approval_prohibited",
+    "desc": "未經核准不得進行投資行為",
+    "expr": [
+      "EQ",
+      "investment_without_approval_prohibited",
+      [
+        "IMPLIES",
+        [
+          "NOT",
+          [
+            "EQ",
+            "investment_approved",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "investment_performed",
+            true
+          ]
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:investment_no_voting_rights_if_no_approval",
+    "desc": "未申請核准取得之股份無表決權且不計入已發行股份總數",
+    "expr": [
+      "EQ",
+      "investment_no_voting_rights_if_no_approval",
+      [
+        "IMPLIES",
+        [
+          "NOT",
+          [
+            "EQ",
+            "investment_approved",
+            true
+          ]
+        ],
+        [
+          "AND",
+          [
+            "EQ",
+            "shares_have_no_voting_right",
+            true
+          ],
+          [
+            "EQ",
+            "shares_not_counted_in_total",
+            true
+          ]
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:regulator_may_order_disposal_of_illegal_investment",
+    "desc": "主管機關應限令處分違規投資",
+    "expr": [
+      "EQ",
+      "regulator_order_disposal",
+      [
+        "IMPLIES",
+        [
+          "NOT",
+          [
+            "EQ",
+            "investment_approved",
+            true
+          ]
+        ],
+        [
+          "EQ",
+          "regulator_order_dispose_illegal_investment",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:excess_business_or_investment_must_adjust",
+    "desc": "子公司業務或投資逾越法令規定範圍者應限期調整",
+    "expr": [
+      "EQ",
+      "excess_business_or_investment_must_adjust",
+      [
+        "IMPLIES",
+        [
+          "OR",
+          [
+            "EQ",
+            "subsidiary_business_exceed_limit",
+            true
+          ],
+          [
+            "EQ",
+            "subsidiary_investment_exceed_limit",
+            true
+          ]
+        ],
+        [
+          "EQ",
+          "regulator_order_adjust",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:adjustment_period_limit",
+    "desc": "調整期限最長三年，得申請延長二次，每次二年",
+    "expr": [
+      "EQ",
+      "adjustment_period_limit",
+      [
+        "AND",
+        [
+          "LE",
+          "adjustment_period_years",
+          3
+        ],
+        [
+          "LE",
+          "adjustment_extension_times",
+          2
+        ],
+        [
+          "LE",
+          "adjustment_extension_years_per_time",
+          2
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:prohibited_manager_in_venture_invested_company",
+    "desc": "金融控股公司負責人或職員不得擔任創業投資事業所投資事業經理人",
+    "expr": [
+      "EQ",
+      "prohibited_manager_in_venture_invested_company",
+      [
+        "NOT",
+        [
+          "EQ",
+          "fhc_manager_is_venture_invested_company_manager",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:subsidiary_capital_reduction_approval_required",
+    "desc": "子公司減資應事先申請核准",
+    "expr": [
+      "EQ",
+      "subsidiary_capital_reduction_approval_required",
+      [
+        "IMPLIES",
+        [
+          "EQ",
+          "subsidiary_capital_reduction",
+          true
+        ],
+        [
+          "EQ",
+          "capital_reduction_approval_applied",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:regulator_may_impose_sanctions",
+    "desc": "違反法令或有礙健全經營時主管機關得予糾正、限期改善及處分",
+    "expr": [
+      "EQ",
+      "regulator_may_impose_sanctions",
+      [
+        "IMPLIES",
+        [
+          "OR",
+          [
+            "EQ",
+            "violate_law",
+            true
+          ],
+          [
+            "EQ",
+            "impede_sound_operation",
+            true
+          ]
+        ],
+        [
+          "EQ",
+          "regulator_impose_sanctions",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:sanction_types",
+    "desc": "主管機關可採取之處分種類",
+    "expr": [
+      "EQ",
+      "sanction_types",
+      [
+        "OR",
+        [
+          "EQ",
+          "revoke_statutory_meeting_resolution",
+          true
+        ],
+        [
+          "EQ",
+          "suspend_subsidiary_business_part_or_all",
+          true
+        ],
+        [
+          "EQ",
+          "remove_manager_or_staff",
+          true
+        ],
+        [
+          "EQ",
+          "remove_or_suspend_director_or_supervisor",
+          true
+        ],
+        [
+          "EQ",
+          "order_dispose_subsidiary_shares",
+          true
+        ],
+        [
+          "EQ",
+          "revoke_permit",
+          true
+        ],
+        [
+          "EQ",
+          "other_necessary_measures",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:remove_director_supervisor_notify_economic_ministry",
+    "desc": "解除董事監察人職務時通知經濟部廢止登記",
+    "expr": [
+      "EQ",
+      "remove_director_supervisor_notify_economic_ministry",
+      [
+        "IMPLIES",
+        [
+          "EQ",
+          "remove_director_or_supervisor",
+          true
+        ],
+        [
+          "EQ",
+          "notify_economic_ministry_to_cancel_registration",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:revoke_permit_must_dispose_shares_and_restrict_name_use",
+    "desc": "廢止許可時應限期處分股份及禁止使用金融控股公司名稱",
+    "expr": [
+      "EQ",
+      "revoke_permit_must_dispose_shares_and_restrict_name_use",
+      [
+        "IMPLIES",
+        [
+          "EQ",
+          "revoke_permit",
+          true
+        ],
+        [
+          "AND",
+          [
+            "EQ",
+            "dispose_shares_within_deadline",
+            true
+          ],
+          [
+            "EQ",
+            "not_use_fhc_name",
+            true
+          ],
+          [
+            "EQ",
+            "apply_company_change_registration",
+            true
+          ]
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "fhc:fail_to_dispose_shares_must_liquidate",
+    "desc": "未於期限內處分完成者應解散清算",
+    "expr": [
+      "EQ",
+      "fail_to_dispose_shares_must_liquidate",
+      [
+        "IMPLIES",
+        [
+          "AND",
+          [
+            "EQ",
+            "revoke_permit",
+            true
+          ],
+          [
+            "NOT",
+            [
+              "EQ",
+              "dispose_shares_within_deadline",
+              true
+            ]
+          ]
+        ],
+        [
+          "EQ",
+          "must_liquidate",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "fhc"
+  },
+  {
+    "id": "bank:no_unsecured_credit_over_3_percent",
+    "desc": "銀行對持有實收資本總額超過3%之企業等不得無擔保授信",
+    "expr": [
+      "EQ",
+      "no_unsecured_credit_over_3_percent",
+      [
+        "NOT",
+        [
+          "AND",
+          [
+            "GT",
+            "credit_amount_to_enterprise_percent",
+            3.0
+          ],
+          [
+            "EQ",
+            "credit_is_unsecured",
+            true
+          ]
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "bank"
+  },
+  {
+    "id": "bank:no_unsecured_credit_to_related_persons",
+    "desc": "銀行不得對負責人、職員、主要股東及其利害關係人無擔保授信",
+    "expr": [
+      "EQ",
+      "no_unsecured_credit_to_related_persons",
+      [
+        "NOT",
+        [
+          "AND",
+          [
+            "EQ",
+            "credit_is_unsecured",
+            true
+          ],
+          [
+            "OR",
+            [
+              "EQ",
+              "credit_to_responsible_person",
+              true
+            ],
+            [
+              "EQ",
+              "credit_to_staff",
+              true
+            ],
+            [
+              "EQ",
+              "credit_to_major_shareholder",
+              true
+            ],
+            [
+              "EQ",
+              "credit_to_related_person_of_responsible_or_credit_staff",
+              true
+            ]
+          ]
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "bank"
+  },
+  {
+    "id": "bank:consumer_and_government_loans_exempted",
+    "desc": "消費者貸款及政府貸款不受無擔保授信限制",
+    "expr": [
+      "EQ",
+      "consumer_and_government_loans_exempted",
+      [
+        "OR",
+        [
+          "EQ",
+          "loan_is_consumer_loan",
+          true
+        ],
+        [
+          "EQ",
+          "loan_is_government_loan",
+          true
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "bank"
+  },
+  {
+    "id": "bank:major_shareholder_definition",
+    "desc": "主要股東定義含持股1%以上及其配偶未成年子女持股",
+    "expr": [
+      "EQ",
+      "major_shareholder_definition",
+      [
+        "EQ",
+        "major_shareholder_total_share_percent",
+        [
+          "ADD",
+          "major_shareholder_own_share_percent",
+          "major_shareholder_spouse_share_percent",
+          "major_shareholder_minor_children_share_percent"
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "bank"
+  },
+  {
+    "id": "bank:secured_credit_over_5_percent_requirements",
+    "desc": "銀行對持有實收資本總額超過5%之企業等擔保授信應有十足擔保且條件不得優於同類授信",
+    "expr": [
+      "EQ",
+      "secured_credit_over_5_percent_requirements",
+      [
+        "IMPLIES",
+        [
+          "AND",
+          [
+            "GE",
+            "credit_amount_to_enterprise_percent",
+            5.0
+          ],
+          [
+            "EQ",
+            "credit_is_secured",
+            true
+          ]
+        ],
+        [
+          "AND",
+          [
+            "EQ",
+            "credit_has_full_collateral",
+            true
+          ],
+          [
+            "NOT",
+            [
+              "EQ",
+              "credit_conditions_better_than_similar",
+              true
+            ]
+          ]
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "bank"
+  },
+  {
+    "id": "bank:secured_credit_over_threshold_must_board_approval",
+    "desc": "授信達主管機關規定金額以上須經董事會三分之二出席及四分之三同意",
+    "expr": [
+      "EQ",
+      "secured_credit_over_threshold_must_board_approval",
+      [
+        "IMPLIES",
+        [
+          "GE",
+          "credit_amount",
+          "regulator_defined_threshold"
+        ],
+        [
+          "AND",
+          [
+            "GE",
+            "board_attendance_ratio",
+            0.6667
+          ],
+          [
+            "GE",
+            "board_approval_ratio",
+            0.75
+          ]
+        ]
+      ]
+    ],
+    "weight": 1,
+    "domain": "bank"
+  },
+  {
+    "id": "meta:penalty_default_false",
+    "desc": "預設不處罰",
+    "expr": [
+      "EQ",
+      "penalty",
+      false
+    ],
+    "weight": 0,
+    "domain": "meta"
+  },
+  {
+    "id": "meta:penalty_conditions",
+    "desc": "處罰條件：違反金融控股公司投資核准、子公司業務範圍、調整命令、負責人職務限制、子公司減資核准及銀行授信限制等規定時處罰",
+    "expr": [
+      "EQ",
+      "penalty",
+      [
+        "OR",
+        [
+          "NOT",
+          [
+            "EQ",
+            "subsidiary_business_scope_ok",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "investment_approved",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "investment_without_approval_prohibited",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "investment_no_voting_rights_if_no_approval",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "regulator_order_disposal",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "excess_business_or_investment_must_adjust",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "adjustment_period_limit",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "prohibited_manager_in_venture_invested_company",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "subsidiary_capital_reduction_approval_required",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "regulator_may_impose_sanctions",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "sanction_types",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "remove_director_supervisor_notify_economic_ministry",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "revoke_permit_must_dispose_shares_and_restrict_name_use",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "fail_to_dispose_shares_must_liquidate",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "no_unsecured_credit_over_3_percent",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "no_unsecured_credit_to_related_persons",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "consumer_and_government_loans_exempted",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "major_shareholder_definition",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "secured_credit_over_5_percent_requirements",
+            true
+          ]
+        ],
+        [
+          "NOT",
+          [
+            "EQ",
+            "secured_credit_over_threshold_must_board_approval",
+            true
+          ]
+        ]
+      ]
+    ],
+    "weight": 0,
+    "domain": "meta"
+  }
+]

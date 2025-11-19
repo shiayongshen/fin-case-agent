@@ -1,0 +1,177 @@
+[
+  {
+    "name": "agent_or_notary",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "bank_operate_as_agent",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "bank_operate_as_broker",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "bank_permit_granted",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "bank_permitted_to_operate",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "broker",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "broker_charge_fee",
+    "type": "Real",
+    "source": "default"
+  },
+  {
+    "name": "broker_disclose_fee_standard",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "broker_duty_of_care_and_fidelity",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "broker_exercise_duty_of_care",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "broker_fulfill_fidelity_duty",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "broker_provide_written_report",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "broker_report_and_fee_disclosure_ok",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "correction_or_penalty_required",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "guarantee",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "guarantee_deposit_amount",
+    "type": "Real",
+    "source": "default"
+  },
+  {
+    "name": "guarantee_minimum_amount",
+    "type": "Real",
+    "source": "default"
+  },
+  {
+    "name": "guarantee_minimum_amount_set_by_authority",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "insurance_type",
+    "type": "Int",
+    "source": "default"
+  },
+  {
+    "name": "liability",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "license_and_guarantee_required",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "license_permitted",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "management_rules_defined_by_authority",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "management_rules_set",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "minimum_guarantee_amount_set",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "penalty",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "practice_certificate_held",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "relevant_insurance_subscribed",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "relevant_insurance_type_ok",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "violate_165_1_or_163_5_rule",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "violate_broker_duty_rule",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "violate_financial_or_business_management_rule",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "violation_165_1_or_163_5",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "violation_broker_duty",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "violation_financial_or_business_management",
+    "type": "Bool",
+    "source": "default"
+  }
+]

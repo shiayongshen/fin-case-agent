@@ -1,0 +1,132 @@
+[
+  {
+    "name": "accelerated_deterioration",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "accelerated_deterioration_and_no_improvement",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "capital_adequacy_ratio",
+    "type": "Real",
+    "unit": "%",
+    "domain": {
+      "min": -100,
+      "max": 1000
+    },
+    "source": "default"
+  },
+  {
+    "name": "capital_level",
+    "type": "Int",
+    "source": "default"
+  },
+  {
+    "name": "capital_level_2_measures_executed",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "capital_level_3_measures_executed",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "capital_level_4_measures_executed",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "capital_level_adequate",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "capital_level_insufficient",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "capital_level_severe_insufficiency",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "capital_level_significant_deterioration",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "capital_plan_completed",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "improvement_after_counseling",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "improvement_plan_approved",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "improvement_plan_executed",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "improvement_plan_submitted",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "level_3_measures_executed",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "level_4_measures_executed",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "net_worth",
+    "type": "Real",
+    "unit": "%",
+    "domain": {
+      "min": -100,
+      "max": 1000
+    },
+    "source": "default"
+  },
+  {
+    "name": "net_worth_ratio",
+    "type": "Real",
+    "unit": "%",
+    "domain": {
+      "min": -100,
+      "max": 1000
+    },
+    "source": "default"
+  },
+  {
+    "name": "penalty",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "severe_insufficiency_and_no_capital_plan",
+    "type": "Bool",
+    "source": "default"
+  },
+  {
+    "name": "significant_deterioration_and_no_approved_plan",
+    "type": "Bool",
+    "source": "default"
+  }
+]

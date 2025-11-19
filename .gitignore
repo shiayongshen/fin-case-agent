@@ -1,0 +1,33 @@
+# filepath: /Users/vincenthsia/uicompliance/.gitignore
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv/
+
+# Environment variables（重要！隱藏所有 .env 文件）
+.env
+.env.local
+.env.*.local
+
+# Chroma 數據庫
+chroma_db/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
