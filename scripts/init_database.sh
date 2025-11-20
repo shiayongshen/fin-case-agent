@@ -82,11 +82,17 @@ restore_database() {
         return 1
     fi
     
-    # 檢查是否已存在
+    # 檢查是否已存在並且不為空
     if [ -d "$CHROMA_DB_DIR" ]; then
-        print_warn "數據庫已存在: $CHROMA_DB_DIR"
-        print_info "跳過還原"
-        return 0
+        FILE_COUNT=$(find "$CHROMA_DB_DIR" -type f 2>/dev/null | wc -l)
+        if [ "$FILE_COUNT" -gt 0 ]; then
+            print_warn "數據庫已存在且有內容: $CHROMA_DB_DIR ($FILE_COUNT 個文件)"
+            print_info "跳過還原"
+            return 0
+        else
+            print_warn "數據庫目錄已存在但為空，刪除後重新還原..."
+            rm -rf "$CHROMA_DB_DIR"
+        fi
     fi
     
     # 提取備份
