@@ -66,6 +66,8 @@ verify_backup() {
     return 0
 }
 
+
+
 # 函數：還原數據庫
 restore_database() {
     local backup_file="$1"
@@ -82,22 +84,14 @@ restore_database() {
         return 1
     fi
     
-    # 檢查是否已存在並且不為空
+    # 提取備份時使用 --overwrite 選項覆蓋現有文件
+    # 這樣可以避免 "Device or resource busy" 的問題
+    print_info "提取備份文件中..."
     if [ -d "$CHROMA_DB_DIR" ]; then
-        FILE_COUNT=$(find "$CHROMA_DB_DIR" -type f 2>/dev/null | wc -l)
-        if [ "$FILE_COUNT" -gt 0 ]; then
-            print_warn "數據庫已存在且有內容: $CHROMA_DB_DIR ($FILE_COUNT 個文件)"
-            print_info "跳過還原"
-            return 0
-        else
-            print_warn "數據庫目錄已存在但為空，刪除後重新還原..."
-            rm -rf "$CHROMA_DB_DIR"
-        fi
+        print_warn "數據庫目錄已存在，將用新備份覆蓋..."
     fi
     
-    # 提取備份
-    print_info "提取備份文件中..."
-    if ! tar -xzf "$backup_file" -C "$PROJECT_DIR"; then
+    if ! tar -xzf "$backup_file" -C "$PROJECT_DIR" --overwrite 2>/dev/null || ! tar -xzf "$backup_file" -C "$PROJECT_DIR"; then
         print_error "提取備份文件失敗"
         return 1
     fi

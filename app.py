@@ -596,8 +596,35 @@ async def on_message(msg: cl.Message):
             stream_delay=0.001
         )
         
+        # 🔍 Debug: 檢查結果格式
+        print(f"[DEBUG] 對話結果類型: {type(result)}")
+        if result is None:
+            print(f"[ERROR] ChatManager 返回了 None")
+            result = {
+                "success": False,
+                "error": "ChatManager 返回了 None",
+                "messages": {
+                    "host_responses": [],
+                    "search_results": [],
+                    "analysis_results": [],
+                    "system_messages": []
+                }
+            }
+        elif not isinstance(result, dict):
+            print(f"[ERROR] ChatManager 返回了非字典類型: {result}")
+            result = {
+                "success": False,
+                "error": f"ChatManager 返回了非字典類型: {type(result)}",
+                "messages": {
+                    "host_responses": [],
+                    "search_results": [],
+                    "analysis_results": [],
+                    "system_messages": []
+                }
+            }
+        
         # 🔍 Debug: 列印結果
-        print(f"[DEBUG] 對話結果: success={result['success']}")
+        print(f"[DEBUG] 對話結果: success={result.get('success', 'MISSING')}")
         
         # 修正：檢查 messages 是否為字典
         if isinstance(result.get('messages'), dict):
@@ -606,7 +633,7 @@ async def on_message(msg: cl.Message):
             print(f"[DEBUG] 訊息格式: {type(result.get('messages'))}")
         
         # 儲存歷史
-        if result["success"]:
+        if result.get("success", False):
             message_history.append({"role": "user", "content": processed_input})
             
             # 儲存所有 Agent 的回應
@@ -1061,6 +1088,51 @@ async def on_upload_analysis_report(action):
         print(f"[AnalysisUpload] 上傳失敗: {e}")
         await cl.Message(content=f"❌ 上傳失敗: {str(e)}").send()
         cl.user_session.set("disable_input", False)
+
+@cl.action_callback("upload_summary")
+async def on_upload_summary(action):
+    """
+    上傳摘要的 callback
+    """
+    try:
+        print(f"[SummaryUpload] 開始上傳摘要")
+        
+        # 禁用輸入
+        cl.user_session.set("disable_input", True)
+        
+        # 獲取已保存的摘要內容
+        summary_content = cl.user_session.get("current_summary", cl.user_session.get("current_analysis_report"))
+        case_id = cl.user_session.get("current_analysis_case_id", "unknown")
+        
+        if not summary_content:
+            await cl.Message(content="❌ 沒有摘要可上傳。").send()
+            cl.user_session.set("disable_input", False)
+            return
+        
+        # 顯示處理中
+        status_msg = await cl.Message(content="📤 正在上傳摘要...").send()
+        
+        # 生成標題
+        title = f"摘要 - {case_id} - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        
+        # 上傳摘要
+        upload_success = await upload_report_to_fin_case(summary_content, title)
+        
+        # 更新狀態消息
+        if upload_success:
+            status_msg.content = "✅ 摘要已成功上傳到系統！"
+        else:
+            status_msg.content = "❌ 摘要上傳失敗，請稍後重試。"
+        await status_msg.update()
+        
+        # 重新啟用輸入
+        cl.user_session.set("disable_input", False)
+        
+    except Exception as e:
+        print(f"[SummaryUpload] 上傳失敗: {e}")
+        await cl.Message(content=f"❌ 上傳失敗: {str(e)}").send()
+        cl.user_session.set("disable_input", False)
+
 
 async def _extract_case_id_from_chat() -> Optional[str]:
     """
