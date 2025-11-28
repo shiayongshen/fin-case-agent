@@ -14,7 +14,7 @@ services:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - PYTHONPATH=/app
       - CHAINLIT_AUTH_SECRET=${CHAINLIT_AUTH_SECRET:-8KeiRx0U3_tfUh38c1cERszzd3bLCGpb1eAUA_DBHm4}
-    networks:
+    networks: 
       - default
       - fin-network
     volumes:
