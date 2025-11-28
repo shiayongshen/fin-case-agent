@@ -987,11 +987,12 @@ class ChatManager:
 
         msg = cl.Message(content=f"🤖 **{agent}**\n\n{content}")
         await msg.send()
-        msg.actions = [
-            cl.Action(name="confirm", label="✅ 是", payload={"action": "yes"}),
-            cl.Action(name="cancel", label="❌ 否", payload={"action": "no"}),
-        ]
-        await msg.update()
+        # 移除確認按鈕，只顯示訊息
+        # msg.actions = [
+        #     cl.Action(name="confirm", label="✅ 是", payload={"action": "yes"}),
+        #     cl.Action(name="cancel", label="❌ 否", payload={"action": "no"}),
+        # ]
+        # await msg.update()
 
     # -------------------------------------------------------------
     # Helper: 顯示摘要或深入分析的上傳按鈕
@@ -1576,33 +1577,35 @@ class ChatManager:
             await cl_msg.update()
             
             if needs_buttons:
-                # 添加按鈕
-                actions = [
-                    cl.Action(
-                        name=confirm_action,
-                        label=confirm_label,
-                        payload={"action": "confirm"}
-                    ),
-                    cl.Action(
-                        name=cancel_action,
-                        label=cancel_label,
-                        payload={"action": "cancel"}
-                    )
-                ]
-                
-                cl_msg.actions = actions
-                await cl_msg.update()
-                
-                # 儲存按鈕信息
-                action_ids = [a.id for a in actions]
-                action_map = cl.user_session.get("action_map") or {}
-                action_map[cl_msg.id] = action_ids
-                cl.user_session.set("action_map", action_map)
-                
-                active_waiting_ids = cl.user_session.get("active_waiting_message_ids") or []
-                if cl_msg.id not in active_waiting_ids:
-                    active_waiting_ids.append(cl_msg.id)
-                    cl.user_session.set("active_waiting_message_ids", active_waiting_ids)
+                # 移除按鈕，只顯示訊息
+                # # 添加按鈕
+                # actions = [
+                #     cl.Action(
+                #         name=confirm_action,
+                #         label=confirm_label,
+                #         payload={"action": "confirm"}
+                #     ),
+                #     cl.Action(
+                #         name=cancel_action,
+                #         label=cancel_label,
+                #         payload={"action": "cancel"}
+                #     )
+                # ]
+                # 
+                # cl_msg.actions = actions
+                # await cl_msg.update()
+                # 
+                # # 儲存按鈕信息
+                # action_ids = [a.id for a in actions]
+                # action_map = cl.user_session.get("action_map") or {}
+                # action_map[cl_msg.id] = action_ids
+                # cl.user_session.set("action_map", action_map)
+                # 
+                # active_waiting_ids = cl.user_session.get("active_waiting_message_ids") or []
+                # if cl_msg.id not in active_waiting_ids:
+                #     active_waiting_ids.append(cl_msg.id)
+                #     cl.user_session.set("active_waiting_message_ids", active_waiting_ids)
+                pass
         
         else:
             # 普通訊息，直接顯示
