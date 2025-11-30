@@ -61,6 +61,8 @@ class ChatManager:
         self.last_processed_count = 0
         # 保存完整對話歷史
         self.full_conversation_history = []
+        # ⭐ 新增：保存恢復的訊息備份（防止 autogen 清除）
+        self.messages_backup = []
         # 追蹤當前執行的對話任務
         self.current_chat_task: Optional[asyncio.Task] = None
         # 中斷標誌
@@ -254,7 +256,7 @@ class ChatManager:
                 # ⭐ 在轉交前，注入完整的變數列表到聊天消息
                 print("[StateTransition] 準備注入變數列表...")
                 self._update_constraint_agent_with_variables()
-                print(f"[StateTransition] 注入完成，group_chat.messages 總數: {len(self.group_chat.messages)}")
+                print(f"[StateTransition] 注入完成，manager.groupchat.messages 總數: {len(self.manager.groupchat.messages)}")
                 
                 return self._get_autogen_agent_by_name("constraint_customization_agent")
 
@@ -569,7 +571,8 @@ class ChatManager:
             }
             
             self.group_chat.messages.append(context_message)
-            print(f"[ChatManager] ✅ 已向群組對話注入變數列表上下文 (訊息總數: {len(self.group_chat.messages)})")
+            self.manager.groupchat.messages.append(context_message)  # ⭐ 同時添加到 manager
+            print(f"[ChatManager] ✅ 已向群組對話注入變數列表上下文 (訊息總數: {len(self.manager.groupchat.messages)})")
         
         except Exception as e:
             import traceback
@@ -677,6 +680,7 @@ class ChatManager:
             
             # 在聊天歷史中插入這個消息
             self.group_chat.messages.append(variable_message)
+            self.manager.groupchat.messages.append(variable_message)  # ⭐ 同時添加到 manager
             print(f"[ChatManager] ✅ 已向群組對話注入完整 Z3 求解結果和變數列表 ({variable_count} 個變數，case_id: {case_id})")
             print(f"[ChatManager] 📝 constraint_customization_agent 現在可以訪問完整的初始事實和建議模型數據")
         
@@ -691,38 +695,170 @@ class ChatManager:
     # 入口：啟動帶有串流輸出的群組對話
     # -------------------------------------------------------------
     async def initiate_chat_with_streaming(
-        self,
-        message: str,
-        stream_delay: float = 0.001
-    ):   
+    self,
+    message: str,
+    stream_delay: float = 0.001
+):
         """
-        最終重構版本 — 支援 AutoGen GroupChat + Chainlit Streaming
-        內容包含：
-        ✔ constraint_customization_agent 停等邏輯
-        ✔ host_agent 停等邏輯（法條 / 案例 / 深入分析）
-        ✔ 工具呼叫等待＆工具結果顯示
-        ✔ 摘要／深入分析的「📤 上傳」按鈕
-        ✔ 正常 Agent 訊息串流輸出
-        ✔ 不顯示五筆記憶、不插入 context_summary
+        最終重構版本 — messages 即時串流 + chat_result 補渲染雙保險（支援 ChatResult object）
         """
         import chainlit as cl
         import asyncio
 
         conversation_state = cl.user_session.get("conversation_state", "initial")
-
-        # 1. 產生實際要送給 AutoGen 的訊息（不再加五條對話）
         enhanced_message = self._prepare_user_message(message, conversation_state)
 
-        # 2. 檢查是否有 direct-response 工具（例如清除按鈕之類）
         direct = await self._check_direct_response(message)
         if direct:
-                return direct
+            return direct
+
+        # ---------------------------
+        # ChatResult / dict 兼容取值
+        # ---------------------------
+        def _result_get(res, key, default=None):
+            if res is None:
+                return default
+            # dict-like
+            if isinstance(res, dict):
+                return res.get(key, default)
+            # ChatResult 可能有 to_dict
+            if hasattr(res, "to_dict") and callable(res.to_dict):
+                try:
+                    d = res.to_dict()
+                    if isinstance(d, dict):
+                        return d.get(key, default)
+                except Exception:
+                    pass
+            # 有些 ChatResult 可能可被 dict() 轉
+            try:
+                d = dict(res)
+                if isinstance(d, dict):
+                    return d.get(key, default)
+            except Exception:
+                pass
+            # object attribute
+            if hasattr(res, key):
+                return getattr(res, key)
+            return default
+
+        def _normalize_result_items(items, default_name="host_agent"):
+            """
+            normalize 成 [{"name": str, "content": str}, ...]
+            """
+            norm = []
+            if not items:
+                return norm
+
+            if isinstance(items, str):
+                return [{"name": default_name, "content": items}]
+
+            if isinstance(items, dict):
+                name = items.get("name") or items.get("role") or default_name
+                content = items.get("content") or items.get("text") or ""
+                if content:
+                    norm.append({"name": str(name), "content": str(content)})
+                return norm
+
+            if isinstance(items, list):
+                for it in items:
+                    if isinstance(it, str):
+                        norm.append({"name": default_name, "content": it})
+                    elif isinstance(it, dict):
+                        name = it.get("name") or it.get("role") or default_name
+                        content = it.get("content") or it.get("text") or ""
+                        if content is None:
+                            content = ""
+                        norm.append({"name": str(name), "content": str(content)})
+                    else:
+                        # 其他物件（例如 Autogen Message）
+                        n = getattr(it, "name", None) or getattr(it, "role", None) or default_name
+                        c = getattr(it, "content", None) or getattr(it, "text", None) or ""
+                        if c:
+                            norm.append({"name": str(n), "content": str(c)})
+                return norm
+
+            # 單一未知物件
+            n = getattr(items, "name", None) or getattr(items, "role", None) or default_name
+            c = getattr(items, "content", None) or getattr(items, "text", None) or ""
+            if c:
+                norm.append({"name": str(n), "content": str(c)})
+            return norm
 
         try:
-            # -------------------------------------------------------------
-            # 啟動 AutoGen 的 initiate_chat（在背景 thread 跑）
-            # -------------------------------------------------------------
-            start_cnt = len(self.group_chat.messages)
+            # ⭐ 修復：檢查是否需要恢復備份的訊息
+            # 如果 groupchat.messages 為空但有備份，則恢復
+            all_msgs = self.manager.groupchat.messages
+            if len(all_msgs) == 0 and len(self.messages_backup) > 0:
+                print(f"[Poll] ⚠️  偵測到 messages 為空但有備份，恢復 {len(self.messages_backup)} 條備份訊息")
+                all_msgs.extend([msg.copy() for msg in self.messages_backup])
+                self.group_chat.messages = all_msgs
+                self.last_processed_count = len(all_msgs)
+                # 也同步到 agents 記憶體
+                self._sync_agents_memory(all_msgs)
+            
+            # --- manager.groupchat.messages 為真源 ---
+            all_msgs = self.manager.groupchat.messages
+            self.group_chat.messages = all_msgs
+            self.last_processed_count = len(all_msgs)
+
+            print(f"[Poll] 🚀 開始對話，初始訊息數: {self.last_processed_count}")
+            
+            # ⭐ 調試：列印原始的群組訊息
+            if self.last_processed_count > 0:
+                print(f"\n[Poll] 📋 當前 groupchat.messages 內容（共 {len(all_msgs)} 條）:")
+                for i, msg in enumerate(all_msgs):
+                    name = msg.get("name", "?")
+                    role = msg.get("role", "?")
+                    content = str(msg.get("content", ""))[:100]  # 只列印前 100 字
+                    print(f"  [{i}] name={name}, role={role}, content={content}...")
+                print()
+                
+                # ⭐ 關鍵診斷：檢查 host_agent 的完整訊息歷史（即將發送給 LLM 的）
+                try:
+                    host_agent = None
+                    for ag in self.agent_instances:
+                        if getattr(ag, 'name', '') == 'host_agent':
+                            host_agent = ag
+                            break
+                    
+                    if host_agent:
+                        print(f"[Poll] 🔍 即將發送給 LLM 的訊息歷史（host_agent）:")
+                        
+                        # 嘗試多個可能的屬性
+                        chat_messages = None
+                        if hasattr(host_agent, 'chat_messages'):
+                            chat_messages = host_agent.chat_messages
+                            source = "chat_messages"
+                        elif hasattr(host_agent, '_chat_messages'):
+                            chat_messages = host_agent._chat_messages  # type: ignore
+                            source = "_chat_messages"
+                        else:
+                            source = "UNKNOWN"
+                            
+                        if chat_messages is None:
+                            print(f"  ❌ 無法找到 chat_messages")
+                        elif isinstance(chat_messages, dict):
+                            print(f"  📦 Type: dict (source: {source})")
+                            for key, msgs in list(chat_messages.items())[:1]:  # 只顯示第一個 key
+                                print(f"    - Key '{key}': {len(msgs)} 條訊息")
+                                for i, m in enumerate(msgs):
+                                    m_role = m.get("role", "?") if isinstance(m, dict) else getattr(m, "role", "?")
+                                    m_name = m.get("name", "?") if isinstance(m, dict) else getattr(m, "name", "?")
+                                    m_content = str(m.get("content", "") if isinstance(m, dict) else getattr(m, "content", ""))[:60]
+                                    print(f"      [{i}] role={m_role}, name={m_name}, content={m_content}...")
+                        else:
+                            print(f"  📦 Type: {type(chat_messages).__name__} (source: {source}), Length: {len(chat_messages) if hasattr(chat_messages, '__len__') else '?'}")
+                            if isinstance(chat_messages, list):
+                                for i, m in enumerate(chat_messages):
+                                    m_role = m.get("role", "?") if isinstance(m, dict) else getattr(m, "role", "?")
+                                    m_name = m.get("name", "?") if isinstance(m, dict) else getattr(m, "name", "?")
+                                    m_content = str(m.get("content", "") if isinstance(m, dict) else getattr(m, "content", ""))[:60]
+                                    print(f"      [{i}] role={m_role}, name={m_name}, content={m_content}...")
+                        print()
+                except Exception as e:
+                    print(f"[Poll] ❌ 無法讀取 host_agent 訊息: {e}\n")
+                    import traceback
+                    traceback.print_exc()
 
             chat_task = asyncio.create_task(
                 asyncio.to_thread(
@@ -734,109 +870,151 @@ class ChatManager:
             )
             self.current_chat_task = chat_task
 
-            processed = set()
             current_tool_msg = None
             tool_agent_name = None
+            poll_count = 0
 
-            # -------------------------------------------------------------
-            # 主輪詢：每 0.2s 檢查 GroupChat 是否有新訊息
-            # -------------------------------------------------------------
+            # =======================
+            # Poll messages 即時串流
+            # =======================
             while not chat_task.done():
                 await asyncio.sleep(0.2)
+                poll_count += 1
 
-                all_msgs = self.group_chat.messages
+                all_msgs = self.manager.groupchat.messages
+                if self.group_chat.messages is not all_msgs:
+                    self.group_chat.messages = all_msgs
+
                 cur_cnt = len(all_msgs)
+                if cur_cnt < self.last_processed_count:
+                    print(f"[Poll] ⚠️ messages reset: {cur_cnt} < {self.last_processed_count}, reset pointer")
+                    self.last_processed_count = cur_cnt
 
-                if cur_cnt > start_cnt:
-                    # 處理所有新增的項目
-                    for idx in range(start_cnt, cur_cnt):
-                        if idx in processed:
-                            continue
-                        msg = all_msgs[idx]
-                        agent = msg.get("name", "")
-                        content_raw = msg.get("content", "")
-                        content = "" if content_raw is None else str(content_raw)
+                if poll_count % 10 == 0:
+                    print(f"[Poll] 📊 輪詢 {poll_count} 次，當前訊息數: {cur_cnt}，last_processed: {self.last_processed_count}")
 
-                        # -----------------------------
-                        # trash message 過濾
-                        # -----------------------------
-                        if self._is_trash_message(agent, content):
-                            processed.add(idx)
-                            continue
+                if cur_cnt <= self.last_processed_count:
+                    continue
 
-                        # -----------------------------
-                        # 處理工具呼叫
-                        # -----------------------------
-                        if self._is_tool_call_message(msg):
-                            processed.add(idx)
-                            tool_agent_name = agent
-                            current_tool_msg = await self._show_tool_waiting(agent)
-                            continue
+                for idx in range(self.last_processed_count, cur_cnt):
+                    msg = all_msgs[idx]
+                    agent = msg.get("name", "")
+                    content_raw = msg.get("content", "")
+                    content = "" if content_raw is None else str(content_raw)
 
-                        # -----------------------------
-                        # 工具執行結果（發送者是 user_proxy，且有 pending tool）
-                        # -----------------------------
-                        if agent == "user_proxy" and current_tool_msg:
-                            processed.add(idx)
-                            await self._handle_tool_result(
-                                agent_name=tool_agent_name,
-                                content=content,
-                                current_tool_msg=current_tool_msg,
-                                tool_sources=None
-                            )
-                            tool_agent_name = None
-                            current_tool_msg = None
-                            continue
-                        
-                        # -----------------------------
-                        # user_proxy 的一般訊息：不顯示在 UI
-                        # -----------------------------
-                        if agent == "user_proxy":
-                            processed.add(idx)
-                            continue
-                        # -----------------------------
-                        # constraint_customization_agent 特殊邏輯
-                        # -----------------------------
-                        if agent == "constraint_customization_agent":
-                            # ★ 先把訊息顯示給前端（stream）
-                            await self._stream_normal_agent_message(agent, content, stream_delay)
-                            processed.add(idx)
+                    if self._is_trash_message(agent, content):
+                        continue
 
-                            # ★ 若有 tag → 停止等待使用者
-                            if any(t in content for t in ["【需要澄清】", "【待確認約束】", "【約束設置完成】", "【退出自定義】"]):
-                                print("[STREAM] 偵測到自定義約束 tag → 停止 AutoGen 等待使用者輸入")
-                                # 不 return None（會讓結果=none），只 break 跳出 while
-                                break
+                    if self._is_tool_call_message(msg):
+                        tool_agent_name = agent
+                        current_tool_msg = await self._show_tool_waiting(agent)
+                        continue
 
-                            continue
-                        # -----------------------------
-                        # host_agent 停等（法條／案例／深入分析）
-                        # -----------------------------
-                        if agent == "host_agent" and self._has_waiting_confirmation_tag(content):
-                            processed.add(idx)
-                            await self._show_waiting_confirmation(agent, content)
-                            continue
+                    if agent == "user_proxy" and current_tool_msg:
+                        await self._handle_tool_result(
+                            agent_name=tool_agent_name,
+                            content=content,
+                            current_tool_msg=current_tool_msg,
+                            tool_sources=None
+                        )
+                        tool_agent_name = None
+                        current_tool_msg = None
+                        continue
 
-                        # -----------------------------
-                        # 上傳按鈕相關（摘要／深入分析）
-                        # -----------------------------
-                        if await self._handle_upload_buttons_if_any(agent, content):
-                            processed.add(idx)
-                            continue
+                    if agent == "user_proxy":
+                        continue
 
-                        # -----------------------------
-                        # 一般 agent 訊息串流
-                        # -----------------------------
-                        processed.add(idx)
+                    if agent == "constraint_customization_agent":
                         await self._stream_normal_agent_message(agent, content, stream_delay)
+                        if any(t in content for t in ["【需要澄清】", "【待確認約束】", "【約束設置完成】", "【退出自定義】"]):
+                            print("[STREAM] 偵測到自定義約束 tag → 停止 AutoGen 等待使用者輸入")
+                            self.last_processed_count = idx + 1
+                            break
+                        continue
 
-                    start_cnt = cur_cnt
+                    if agent == "host_agent" and self._has_waiting_confirmation_tag(content):
+                        await self._show_waiting_confirmation(agent, content)
+                        continue
 
-            # -------------------------------------------------------------
-            # 任務完成後取回結果
-            # -------------------------------------------------------------
+                    if await self._handle_upload_buttons_if_any(agent, content):
+                        continue
+
+                    try:
+                        print(f"[Poll] 📤 顯示一般訊息 [{idx}]: {agent}")
+                        await self._stream_normal_agent_message(agent, content, stream_delay)
+                    except Exception as e:
+                        print(f"[Poll] ❌ 顯示訊息 [{idx}] 失敗: {e}")
+                        import traceback
+                        traceback.print_exc()
+
+                if self.last_processed_count < cur_cnt:
+                    self.last_processed_count = cur_cnt
+
+            # =======================
+            # task done → 拿結果
+            # =======================
+            print(f"[Poll] ✅ 任務完成，總輪詢次數: {poll_count}")
             chat_result = await chat_task
             self.current_chat_task = None
+
+            # ==========================================
+            # ⭐ 雙保險補顯示：messages 沒變就吃 chat_result
+            # ==========================================
+            all_msgs = self.manager.groupchat.messages
+            final_cnt = len(all_msgs)
+            print(f"[Poll] 📊 done 後 messages 總數: {final_cnt}，last_processed: {self.last_processed_count}")
+
+            # 先補 messages 末尾（如果有）
+            if final_cnt > self.last_processed_count:
+                for idx in range(self.last_processed_count, final_cnt):
+                    msg = all_msgs[idx]
+                    agent = msg.get("name", "")
+                    content_raw = msg.get("content", "")
+                    content = "" if content_raw is None else str(content_raw)
+
+                    if self._is_trash_message(agent, content):
+                        continue
+                    if self._is_tool_call_message(msg):
+                        continue
+                    if agent == "user_proxy":
+                        continue
+
+                    await self._stream_normal_agent_message(agent, content, stream_delay)
+
+                self.last_processed_count = final_cnt
+
+            # 如果 messages 真的沒變（你現在的狀況）→ 用 chat_result 補
+            if final_cnt == self.last_processed_count:
+                print("[Poll] ⚠️ messages 無新增，改用 chat_result 補顯示")
+
+                to_flush = []
+                to_flush += _normalize_result_items(_result_get(chat_result, "host_responses"), default_name="host_agent")
+                to_flush += _normalize_result_items(_result_get(chat_result, "search_results"), default_name="search_agent")
+                to_flush += _normalize_result_items(_result_get(chat_result, "analysis_results"), default_name="analysis_agent")
+                to_flush += _normalize_result_items(_result_get(chat_result, "system_messages"), default_name="system")
+
+                for it in to_flush:
+                    agent = it["name"]
+                    content = it["content"].strip()
+                    if not content:
+                        continue
+
+                    if self._is_trash_message(agent, content):
+                        continue
+
+                    if agent == "host_agent" and self._has_waiting_confirmation_tag(content):
+                        await self._show_waiting_confirmation(agent, content)
+                    elif agent == "constraint_customization_agent":
+                        await self._stream_normal_agent_message(agent, content, stream_delay)
+                    else:
+                        await self._stream_normal_agent_message(agent, content, stream_delay)
+
+                    # ⭐ 同步補回 messages，避免下次 restore 又漏
+                    self.group_chat.messages.append({"name": agent, "content": content})
+
+                # 同步回 manager
+                self.manager.groupchat.messages = self.group_chat.messages
+                self.last_processed_count = len(self.group_chat.messages)
 
             return await self._process_chat_result(chat_result)
 
@@ -874,17 +1052,6 @@ class ChatManager:
         if content.strip().lower() == "none":
             return True
         if agent == "code_executor" and "EXECUTION_COMPLETE" not in content:
-            return True
-        return False
-
-    # -------------------------------------------------------------
-    # Helper: 是否為工具呼叫
-    # -------------------------------------------------------------
-    def _is_tool_call_message(self, msg):
-        c = str(msg.get("content", "") or "")
-        if "Tool:" in c or '"tool_name"' in c:
-            return True
-        if msg.get("tool", None):
             return True
         return False
 
@@ -1075,35 +1242,71 @@ class ChatManager:
     # -------------------------------------------------------------
     # Helper: 一般 Agent 的串流輸出
     # -------------------------------------------------------------
-    async def _stream_normal_agent_message(self, agent, content, delay):
+    async def _stream_normal_agent_message(self, agent, content, delay: float = 0.001):
+        """
+        Chainlit streaming helper (reliable version)
+        - 一定 send()
+        - 一定以 agent 為 author
+        - 不做任何去重/skip，fallback 也會顯示
+        - 保留你原本的上傳按鈕 / report 存檔邏輯
+        """
         import chainlit as cl
+        import asyncio
+
+        # ---- defensive normalize ----
+        if content is None:
+            content = ""
+        content = str(content)
+        agent = str(agent) if agent is not None else "agent"
+
         emoji = "🤖"
         text = f"{emoji} **{agent}**\n\n{content}"
 
-        m = cl.Message(content="")
+        # 1) 先送出空訊息（必要）
+        m = cl.Message(
+            author=agent,   # ⭐⭐ 關鍵：一定要設 author
+            content=""
+        )
         await m.send()
 
+        # 2) streaming（逐字）
+        # stream_token 本身會推到前端，不需要每次 update
         for ch in text:
             await m.stream_token(ch)
-            await asyncio.sleep(delay)
+            if delay:
+                await asyncio.sleep(delay)
+
+        # 3) 最後再 update 一次確保收尾
         await m.update()
 
-        # ⭐ 新增：保存最後一條消息 ID 和內容，供上傳按鈕使用
+        # ---- 保存最後一條消息供上傳按鈕使用 ----
         cl.user_session.set("_last_agent_message_id", m.id)
         cl.user_session.set("_last_agent_message_content", text)
 
-        # ⭐ 新增：檢測並保存深入分析報告和自定義約束報告
+        # ---- 深入分析報告偵測 ----
         if agent == "deep_analysis_agent":
-            # 檢查是否包含深入分析報告的標籤
-            if any(tag in content for tag in ["📊 深入分析報告", "⚠️ 需要變更", "✅ 維持現狀", "改善措施", "推薦狀態"]):
+            if any(tag in content for tag in [
+                "📊 深入分析報告",
+                "⚠️ 需要變更",
+                "✅ 維持現狀",
+                "改善措施",
+                "推薦狀態",
+            ]):
                 cl.user_session.set("current_analysis_report", content)
                 print(f"[ChatManager] ✅ 已保存深入分析報告到 session（來自 agent message），長度: {len(content)} 字符")
-        
+
+        # ---- 自定義約束報告偵測 ----
         if agent == "constraint_customization_agent":
-            # 檢查是否包含約束設置完成的標籤
-            if any(tag in content for tag in ["重新求解", "新模型", "變數已更新", "【約束設置完成】"]):
+            if any(tag in content for tag in [
+                "重新求解",
+                "新模型",
+                "變數已更新",
+                "【約束設置完成】",
+            ]):
                 cl.user_session.set("current_analysis_report", content)
                 print(f"[ChatManager] ✅ 已保存自定義約束報告到 session（來自 agent message），長度: {len(content)} 字符")
+
+        return m
 
     # -------------------------------------------------------------
     # Helper: 回傳空結果
@@ -1333,7 +1536,8 @@ class ChatManager:
 
     async def _process_chat_result(self, chat_result) -> Dict:
         """處理對話結果"""
-        all_messages = self.group_chat.messages
+        # ⭐ 使用 manager.groupchat.messages，因為這是 AutoGen 實際使用的訊息列表
+        all_messages = self.manager.groupchat.messages
         
         # 分類訊息
         categorized_messages = {
@@ -1347,9 +1551,15 @@ class ChatManager:
             role = message.get("name", "unknown")
             content = message.get("content", "")
             
-            if not content.strip() or role == "user_proxy":
+            if not content.strip():
                 continue
-            
+            if role == "user_proxy":
+                # 你可以用你現成的判斷方式
+                if self._is_tool_call_message(message):
+                    continue
+                # 或更簡單：內容有明顯工具痕跡才濾
+                if any(k in str(content) for k in ["Tool:", "tool_calls", "Calling function", "EXECUTION_COMPLETE"]):
+                    continue
             # 過濾系統訊息
             if self._is_system_message(content):
                 continue
@@ -1409,51 +1619,212 @@ class ChatManager:
     def reset(self):
         """重置對話狀態"""
         self.group_chat.messages = []
+        self.manager.groupchat.messages = []  # ⭐ 同時重置 manager 的 groupchat
         self.last_processed_count = 0
         self.full_conversation_history = []
         self.is_interrupted = False
         self.current_chat_task = None
         print("[ChatManager] 對話狀態已重置")
     
-    def restore_conversation_history(self, messages: List[Dict]) -> None:
+    async def restore_conversation_history(self, messages: List[Dict]) -> None:
         """
-        恢復對話歷史到群組對話中
-        
-        Args:
-            messages: 要恢復的訊息列表，每個訊息應包含 'name', 'content' 等字段
+        恢復對話歷史到群組對話，並同步到 agents 記憶
         """
+        import asyncio
+        import chainlit as cl
+
         if not messages:
             print("[ChatManager] 沒有要恢復的訊息")
             return
-        
-        print(f"[ChatManager] 開始恢復 {len(messages)} 條訊息")
-        
-        # 清空現有訊息
-        self.group_chat.messages = []
-        self.last_processed_count = 0
+
+        print(f"[ChatManager] 開始恢復 {len(messages)} 條訊息並顯示到前端")
+
+        # ⭐ 保留同一個 list 參考，只 clear 不換物件
+        chat_messages = self.manager.groupchat.messages
+        chat_messages.clear()
+        self.group_chat.messages = chat_messages
+
         self.full_conversation_history = []
-        
-        # 恢復訊息
+        self.last_processed_count = 0
+
+        user_like_agents = {"interactive_user", "user_proxy_input", "user_proxy"}  # 使用者輸入
+        assistant_like_agents = {"host_agent", "search_agent", "summary_agent", "code_executor", 
+                                 "deep_analysis_agent", "legal_retrieval_agent", 
+                                 "constraint_customization_agent"}  # Agent 回應
+
         for i, msg in enumerate(messages):
             try:
-                # 確保訊息格式正確
+                restored_msg = dict(msg) if isinstance(msg, dict) else {"content": str(msg)}
+
+                raw_name = restored_msg.get("name") or restored_msg.get("role") or ""
+                raw_role = restored_msg.get("role") or ""
+
+                # --- 1) 先判斷 role ---
+                # ⭐ 修復：優先使用已有的 role，如果是 assistant 就保留
+                if raw_role == "assistant":
+                    role = "assistant"
+                elif raw_role == "user":
+                    role = "user"
+                else:
+                    # 沒有明確的 role → 依 name 推導
+                    if raw_name in assistant_like_agents:
+                        role = "assistant"
+                    elif raw_name in user_like_agents or raw_name == "":
+                        # ⭐ 修復：當 name 為空時，根據訊息順序判斷
+                        if i > 0 and len(chat_messages) > 0:
+                            prev_role = chat_messages[-1].get("role", "user")
+                            role = "assistant" if prev_role == "user" else "user"
+                        else:
+                            role = "user"
+                    else:
+                        # 預設假設未知的 name 是 assistant（即 agent）
+                        role = "assistant"
+
+                # --- 2) 再決定 name ---
+                # ⭐ 修復：保留原始的 name，不要強制改成 interactive_user
+                # 這樣才能保持原始的訊息結構
+                if raw_name and raw_name not in ["", "user_proxy_input"]:
+                    # 如果有有效的原始 name，就保留它
+                    name = raw_name
+                elif role == "user":
+                    # 只有在沒有原始 name 時，才改成 interactive_user
+                    name = "interactive_user"
+                else:
+                    name = "host_agent"
+
+                content = restored_msg.get("content", "")
                 restored_msg = {
-                    "name": msg.get("name", "user_proxy"),
-                    "content": msg.get("content", ""),
+                    "role": role,
+                    "name": name,
+                    "content": "" if content is None else str(content)
                 }
-                
-                # 如果有額外的字段，也復製過來
-                for key in msg:
-                    if key not in ["name", "content"]:
-                        restored_msg[key] = msg[key]
-                
-                self.group_chat.messages.append(restored_msg)
-                self.full_conversation_history.append(restored_msg)
-                
+
+                chat_messages.append(restored_msg)
+                self.full_conversation_history.append(restored_msg.copy())
+
             except Exception as e:
                 print(f"[ChatManager] 恢復訊息 {i} 失敗: {e}")
+
+        self.last_processed_count = len(chat_messages)
+
+        print(f"[ChatManager] 成功恢復 {self.last_processed_count} 條訊息到內部記憶體")
+        print(f"[ChatManager] manager.groupchat.messages 也已同步: {len(chat_messages)} 條")
+
+        # ✅ ⭐ 保存訊息備份（防止 autogen 在之後操作時清除）
+        self.messages_backup = [msg.copy() for msg in chat_messages]
+        print(f"[ChatManager] ✅ 已保存 {len(self.messages_backup)} 條訊息到備份（防止遺失）")
+
+        # ✅ ⭐⭐ 關鍵：同步 agents 內部記憶
+        self._sync_agents_memory(chat_messages)
+
+        await self._display_restored_history(messages)
         
-        print(f"[ChatManager] 成功恢復 {len(self.group_chat.messages)} 條訊息")
+    def _sync_agents_memory(self, chat_messages: List[Dict]):
+        """
+        把 groupchat.messages 同步進每個 ConversableAgent 的內部記憶。
+        不同 autogen 版本欄位不同，這裡做防禦式同步。
+        """
+        # 轉成 OpenAI-style messages（不然有些版本吃不到 name）
+        oai_msgs = [
+            {
+                "role": m.get("role", "assistant"),
+                "name": m.get("name"),
+                "content": m.get("content", "")
+            }
+            for m in chat_messages
+            if m.get("content")
+        ]
+
+        # ⭐⭐ 關鍵修復：同步到 GroupChatManager 的 _oai_messages
+        # 這是 autogen 實際發送給 LLM 時使用的訊息來源！
+        try:
+            if hasattr(self.manager, "_oai_messages"):
+                # _oai_messages 通常是 dict，key 是 Agent 實例
+                if isinstance(self.manager._oai_messages, dict):
+                    # 設定給每個 agent key
+                    for ag in self.agent_instances:
+                        self.manager._oai_messages[ag] = list(oai_msgs)  # type: ignore
+                    # 也設定給 user_proxy
+                    self.manager._oai_messages[self.user_proxy.get_proxy()] = list(oai_msgs)  # type: ignore
+                print(f"[ChatManager] ✅ 已同步 {len(oai_msgs)} 條訊息到 manager._oai_messages")
+        except Exception as e:
+            print(f"[ChatManager] ⚠️ 同步 manager._oai_messages 失敗: {e}")
+
+        for ag in self.agent_instances:
+            try:
+                # ⭐ 修復：不要在這裡 reset，因為 reset 會清除之前恢復的記憶
+                # 直接同步對話歷史到 agents 的記憶欄位
+                
+                # v0.2/v0.3 常見：chat_messages dict
+                if hasattr(ag, "chat_messages"):
+                    try:
+                        # chat_messages 可能是 dict keyed by conversation-id 或 recipient agent
+                        if isinstance(ag.chat_messages, dict):
+                            # ⭐⭐ 重要：autogen 使用 recipient agent 作為 key
+                            # 所以我們需要同步到 manager 這個 key
+                            ag.chat_messages[self.manager] = list(oai_msgs)  # type: ignore
+                            # 也保留 default key 作為備份
+                            ag.chat_messages["default"] = list(oai_msgs)  # type: ignore
+                        else:
+                            ag.chat_messages = list(oai_msgs)  # type: ignore
+                        print(f"[ChatManager] ✅ 已同步 {len(oai_msgs)} 條訊息到 {getattr(ag,'name','unknown')}.chat_messages")
+                        continue
+                    except Exception as e:
+                        print(f"[ChatManager] 同步 chat_messages 失敗: {e}")
+                        pass
+
+                # 舊版可能叫 _oai_messages
+                if hasattr(ag, "_oai_messages"):
+                    ag._oai_messages = list(oai_msgs)  # type: ignore
+                    print(f"[ChatManager] ✅ 已同步 {len(oai_msgs)} 條訊息到 {getattr(ag,'name','unknown')}._oai_messages")
+                    continue
+
+                # 再更舊可能叫 _conversation_history
+                if hasattr(ag, "_conversation_history"):
+                    ag._conversation_history = list(oai_msgs)  # type: ignore
+                    print(f"[ChatManager] ✅ 已同步 {len(oai_msgs)} 條訊息到 {getattr(ag,'name','unknown')}._conversation_history")
+                    continue
+
+            except Exception as e:
+                print(f"[ChatManager] sync agent memory 失敗: {getattr(ag,'name','unknown')} err={e}")
+
+        print("[ChatManager] ✅ 已同步歷史到所有 agents 內部記憶")
+        
+        # ⭐⭐ 額外關鍵：確保 user_proxy 的 chat_messages[manager] 也被設置
+        # 因為 user_proxy 在 initiate_chat 時會檢查這個
+        try:
+            user_proxy_agent = self.user_proxy.get_proxy()
+            if hasattr(user_proxy_agent, "chat_messages") and isinstance(user_proxy_agent.chat_messages, dict):
+                user_proxy_agent.chat_messages[self.manager] = list(oai_msgs)  # type: ignore
+                print(f"[ChatManager] ✅ 已同步 {len(oai_msgs)} 條訊息到 user_proxy.chat_messages[manager]")
+            
+            # 也同步 user_proxy 的 _oai_messages
+            if hasattr(user_proxy_agent, "_oai_messages") and isinstance(user_proxy_agent._oai_messages, dict):
+                user_proxy_agent._oai_messages[self.manager] = list(oai_msgs)  # type: ignore
+                print(f"[ChatManager] ✅ 已同步 {len(oai_msgs)} 條訊息到 user_proxy._oai_messages[manager]")
+        except Exception as e:
+            print(f"[ChatManager] ⚠️ 同步 user_proxy 訊息失敗: {e}")
+
+    
+    async def _display_restored_history(self, messages: List[Dict]) -> None:
+        """
+        將恢復的歷史訊息顯示在前端 UI 中
+        
+        Args:
+            messages: 要顯示的訊息列表
+        """
+        import chainlit as cl
+        
+        try:
+            # ⭐ 修復：為了避免 Socket.IO "Too many packets in payload" 錯誤，
+            # 我們完全禁用前端訊息顯示，改用 Chainlit 原生的對話持久化機制
+            # 對話歷史已在後台 agents 的記憶體中恢復，不需要重新顯示到前端
+            
+            print(f"[ChatManager] ⏭️  跳過前端歷史顯示（已在後台恢復到 agents 記憶體）")
+            return
+            
+        except Exception as e:
+            print(f"[ChatManager] 顯示歷史訊息時出錯: {e}")
     
     def get_all_messages(self) -> List[Dict]:
         """
@@ -1462,7 +1833,8 @@ class ChatManager:
         Returns:
             訊息列表
         """
-        return self.group_chat.messages.copy()
+        # ⭐ 使用 manager.groupchat.messages，因為這是 AutoGen 實際使用的訊息列表
+        return self.manager.groupchat.messages.copy()
     
     def interrupt_chat(self) -> bool:
         """

@@ -1,14 +1,41 @@
-# Welcome to Chainlit! 🚀🤖
+# 金融合規智能助理 🏦⚖️
 
-Hi there, Developer! 👋 We're excited to have you on board. Chainlit is a powerful tool designed to help you prototype, debug and share applications built on top of LLMs.
+歡迎使用 **金融合規智能助理**！這是一個專為金融法務人員設計的 AI 多代理系統。
 
-## Useful Links 🔗
+## 功能特色 ✨
 
-- **Documentation:** Get started with our comprehensive [Chainlit Documentation](https://docs.chainlit.io) 📚
-- **Discord Community:** Join our friendly [Chainlit Discord](https://discord.gg/k73SQ3FyUh) to ask questions, share your projects, and connect with other developers! 💬
+### � 案例搜尋
+- 快速搜尋相關金融裁罰案例
+- 智能排序，優先顯示最相關結果
 
-We can't wait to see what you create with Chainlit! Happy coding! 💻😊
+### 📚 法條查詢
+- 搜索相關金融法規、法條
+- 提供法條原文與適用說明
 
-## Welcome screen
+### 📊 深入分析
+- 自動分析案例違規要素
+- 使用 Z3 求解器計算最優合規方案
+- 生成詳細分析報告
 
-To modify the welcome screen, edit the `chainlit.md` file at the root of your project. If you do not want a welcome screen, just leave this file empty.
+### ⚙️ 自定義約束
+- 支援自訂分析參數
+- 靈活調整約束條件
+- 重新求解並比較結果
+
+## 使用說明 �
+
+1. **開始對話**：直接輸入您的問題或需求
+2. **搜尋案例**：例如「搜尋內線交易相關案例」
+3. **查詢法條**：例如「查詢證券交易法第 171 條」
+4. **深入分析**：在搜尋結果後，點擊「深入分析」按鈕
+5. **上傳報告**：分析完成後可上傳摘要到系統
+
+## 快速範例 💡
+
+- 「請幫我搜尋近期金控公司的裁罰案例」
+- 「搜尋銀行法違規案例」
+- 「查詢保險法相關法條」
+
+---
+
+如有任何問題，請隨時詢問！ 🤝

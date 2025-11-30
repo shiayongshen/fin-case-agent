@@ -150,6 +150,3 @@ uv run pytest test/
 - 監控 ChromaDB 數據庫的磁盤使用情況
 - 定期備份重要的數據卷
 
-## 授權
-
-本項目採用 MIT 授權。
