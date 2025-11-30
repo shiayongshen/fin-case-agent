@@ -14,6 +14,17 @@ services:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - PYTHONPATH=/app
       - CHAINLIT_AUTH_SECRET=${CHAINLIT_AUTH_SECRET:-8KeiRx0U3_tfUh38c1cERszzd3bLCGpb1eAUA_DBHm4}
+      # CUDA 環境變數
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    # GPU 支援配置
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     networks: 
       - default
       - fin-network

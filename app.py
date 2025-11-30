@@ -281,10 +281,32 @@ async def start_chat():
     
     # 檢查是否有需要恢復的群組訊息
     group_messages = cl.user_session.get("group_chat_messages", [])
+    
+    # ⭐ 調試：檢查 session 中保存的訊息
+    print(f"\n[App] ⭐ DEBUG: session 中的 group_chat_messages 有 {len(group_messages) if group_messages else 0} 條訊息")  # type: ignore
     if group_messages:
-        print("[App] 恢復群組對話歷史...")
-        chat_manager.restore_conversation_history(group_messages)
-        print(f"[App] 已恢復 {len(group_messages)} 條群組訊息")
+        for i, msg in enumerate(group_messages[:5]):  # 只顯示前 5 條
+            if isinstance(msg, dict):
+                name = msg.get("name", "?")
+                role = msg.get("role", "?")
+                content = str(msg.get("content", ""))[:60]
+            else:
+                name = getattr(msg, "name", "?")
+                role = getattr(msg, "role", "?")
+                content = str(getattr(msg, "content", ""))[:60]
+            print(f"  [{i}] name={name}, role={role}, content={content}...")
+    print()
+    
+    # ⭐ 改進的邏輯：如果 chat_manager 是新建立的，且有歷史訊息要恢復，就恢復
+    # 檢查新建立的 chat_manager 是否為空（新實例的話應該是空的）
+    if group_messages and len(chat_manager.group_chat.messages) == 0:
+        print("[App] 新建立的 chat_manager 偵測到有對話歷史要恢復...")
+        await chat_manager.restore_conversation_history(group_messages)
+        print(f"[App] 已恢復 {len(group_messages)} 條群組訊息到新 agents")
+    elif group_messages and len(chat_manager.group_chat.messages) > 0:
+        print("[App] chat_manager 已有訊息，跳過恢復（可能已在本會話中恢復過）")
+    else:
+        print("[App] 沒有可恢復的群組訊息")
     
     # 儲存到 session
     cl.user_session.set("chat_manager", chat_manager)
@@ -531,6 +553,9 @@ async def _show_upload_report_button(message_history: list):
 @cl.on_message
 async def on_message(msg: cl.Message):
     """處理用戶訊息"""
+    # 清除恢復對話標記，因為現在是繼續對話
+    cl.user_session.set("is_resumed_conversation", False)
+    
     # 從 Chainlit Message 物件中提取文本內容
     user_input = msg.content if isinstance(msg, cl.Message) else str(msg)
     
@@ -650,6 +675,35 @@ async def on_message(msg: cl.Message):
             
             # 保存完整的群組對話訊息（用於恢復）
             group_messages = chat_manager.get_all_messages()
+            
+            # ⭐ 修復：在保存前修正訊息的 role
+            # autogen 的 GroupChat 可能把所有訊息都設成 user，我們需要根據 name 推導正確的 role
+            for msg in group_messages:
+                if isinstance(msg, dict):
+                    name = msg.get("name", "")
+                    current_role = msg.get("role", "user")
+                    
+                    # ⭐ 根據 name 推導正確的 role
+                    if name in ["user_proxy", "interactive_user", ""]:
+                        msg["role"] = "user"
+                    elif current_role == "user" and name and name not in ["user_proxy"]:
+                        # 如果是 agent 名稱但被標成 user，改成 assistant
+                        msg["role"] = "assistant"
+            
+            # ⭐ 調試：列印修正後的訊息
+            print(f"\n[DEBUG] 修正後的群組訊息結構（共 {len(group_messages)} 條）:")
+            for i, msg in enumerate(group_messages):
+                if isinstance(msg, dict):
+                    name = msg.get("name", "MISSING")
+                    role = msg.get("role", "MISSING")
+                    content = str(msg.get("content", ""))[:80]
+                else:
+                    name = getattr(msg, "name", "MISSING")
+                    role = getattr(msg, "role", "MISSING")
+                    content = str(getattr(msg, "content", ""))[:80]
+                print(f"  [{i}] name={name}, role={role}, content={content}...")
+            print()
+            
             cl.user_session.set("group_chat_messages", group_messages)
             print(f"[DEBUG] 已保存 {len(group_messages)} 條群組訊息到 session")
         else:
@@ -790,6 +844,9 @@ async def on_chat_resume(thread):
     """恢復對話"""
     print("[App] 恢復對話中...")
     
+    # 設置標記表示這是恢復的對話
+    cl.user_session.set("is_resumed_conversation", True)
+    
     # 恢復簡單的 message_history（用於上傳等功能）
     message_history = []
     if thread.get("steps"):
@@ -801,8 +858,13 @@ async def on_chat_resume(thread):
     cl.user_session.set("message_history", message_history)
     print(f"[App] 恢復了 {len(message_history)} 條消息歷史")
     
+    # 確保 chat_manager 被初始化並恢復狀態
+    if not cl.user_session.get("chat_manager"):
+        print("[App] 在恢復時初始化 chat_manager...")
+        await start_chat()
+        print("[App] chat_manager 初始化完成")
+    
     # 注意：group_chat_messages 會在 start_chat 時由 session 恢復
-    # 這裡只需要確保 session 中有正確的值
 
 
 
