@@ -3,7 +3,7 @@ from .BaseAgent import BaseAgent
 import chainlit as cl
 import json
 
-class ConstraintCustomizationAgent(BaseAgent):
+class CustomizeConstraintAgent(BaseAgent):
     """
     約束自定義 Agent
     - 在會話 state 被設定為 'constraint_customization' 時，負責整個互動流程

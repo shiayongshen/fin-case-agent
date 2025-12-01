@@ -5,7 +5,7 @@
 """
 
 from agents.ChatManager import ChatManager
-from agents import HostAgent, SearchAgent, CodeExecutorAgent, DeepAnalysisAgent, BaseUserProxy
+from agents import HostAgent, SearchCaseAgent, DeepAnalysisAgent, BaseUserProxy
 
 llm_config = {
     "config_list": [{
@@ -19,8 +19,7 @@ def test_complete_flow():
     
     # 建立 agents
     host = HostAgent(llm_config)
-    search = SearchAgent(llm_config)
-    code_executor = CodeExecutorAgent(llm_config)
+    search = SearchCaseAgent(llm_config)
     deep_analysis = DeepAnalysisAgent(llm_config)
     user_proxy = BaseUserProxy()
     

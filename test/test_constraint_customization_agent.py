@@ -11,7 +11,7 @@ except Exception:
 
     cl = _CLShim()
 
-from agents.ConstraintCustomizationAgent import ConstraintCustomizationAgent
+from agents.ConstraintCustomizationAgent import CustomizeConstraintAgent
 
 
 class SimpleSession:
@@ -30,7 +30,7 @@ async def run_tests():
     cl.user_session = SimpleSession()
 
     # 建立 agent
-    agent = ConstraintCustomizationAgent(llm_config={})
+    agent = CustomizeConstraintAgent(llm_config={})
 
     # 設定案例與分析結果
     cl.user_session.set("current_analysis_case_id", "case_0")

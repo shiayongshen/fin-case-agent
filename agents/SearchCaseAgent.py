@@ -2,7 +2,7 @@ from typing import Dict
 from .BaseAgent import BaseAgent
 
 
-class SearchAgent(BaseAgent):
+class SearchCaseAgent(BaseAgent):
     """
     搜尋 Agent
     負責搜索法律案例資料庫

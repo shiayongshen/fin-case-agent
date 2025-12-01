@@ -25,11 +25,16 @@ RUN apt-get update && apt-get install -y \
 # 安裝 uv 包管理器
 RUN pip install uv
 
-# 複製依賴文件
-COPY pyproject.toml uv.lock ./
+# 複製依賴文件（只複製 pyproject.toml，不使用舊的 lock 檔案）
+COPY pyproject.toml ./
 
-# 使用 uv 安裝依賴
-RUN uv sync --frozen --no-install-project
+# 使用 uv 安裝依賴（重新生成 lock 檔案）
+# 不使用全局 CUDA 索引，避免其他套件從 PyTorch 索引安裝
+RUN uv lock && uv sync --no-install-project
+
+# 單獨安裝 CUDA 版本的 PyTorch（覆蓋 CPU 版本）
+RUN . .venv/bin/activate && \
+    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121 --force-reinstall
 
 # 複製應用代碼
 COPY . .

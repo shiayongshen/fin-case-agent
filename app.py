@@ -2,11 +2,12 @@ import os
 from typing import Dict, Optional
 from dotenv import load_dotenv
 import chainlit as cl
+from chainlit.input_widget import TextInput, Select, InputWidget
 from openai import AsyncOpenAI
 from autogen import AssistantAgent
 from chainlit.data.sql_alchemy import SQLAlchemyDataLayer
 from chainlit.data.storage_clients.base import BaseStorageClient
-from agents import ChatManager, BaseUserProxy, HostAgent, SearchAgent, CodeExecutorAgent, DeepAnalysisAgent, SummaryAgent, LegalRetrievalAgent, ConstraintCustomizationAgent
+from agents import ChatManager, BaseUserProxy, HostAgent, SearchCaseAgent, DeepAnalysisAgent, SummaryAgent, SearchLawAgent, CustomizeConstraintAgent
 from utility.legal_search import legal_article_search,search_and_rerank
 from utility.execute_file import list_available_code_files, execute_python_file
 import httpx
@@ -14,19 +15,66 @@ from datetime import datetime
 from typing import Optional, Dict
 import asyncio
 load_dotenv()
-client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# ===== 配置 =====
-OPENAI_MODEL = "gpt-4.1-mini"
-llm_config = {
-    "config_list": [{
-        "model": OPENAI_MODEL,
-        "api_key": os.getenv("OPENAI_API_KEY")
-    }]
-}
+# ===== 預設配置 =====
+DEFAULT_API_KEY = os.getenv("OPENAI_API_KEY", "")
+DEFAULT_MODEL = "gpt-4.1-mini"
+
+# 支援的模型列表
+AVAILABLE_MODELS = [
+    "gpt-4.1-mini",
+    "gpt-4.1",
+    "gpt-4o",
+    "gpt-4o-mini", 
+    "gpt-4-turbo",
+    "gpt-4",
+    "gpt-3.5-turbo",
+    "o1-preview",
+    "o1-mini",
+]
+
+# 初始化全域客戶端（會在設定更新時重新建立）
+client = AsyncOpenAI(api_key=DEFAULT_API_KEY) if DEFAULT_API_KEY else None
+
+def get_llm_config(api_key: Optional[str] = None, model: Optional[str] = None) -> dict:
+    """
+    取得 LLM 配置
+    
+    Args:
+        api_key: OpenAI API Key，如果不提供則從 session 或環境變數取得
+        model: 模型名稱，如果不提供則從 session 或預設值取得
+    
+    Returns:
+        llm_config 字典
+    """
+    # 優先順序：參數 > session > 環境變數/預設值
+    final_api_key = api_key
+    final_model = model
+    
+    if not final_api_key:
+        try:
+            final_api_key = cl.user_session.get("openai_api_key") or DEFAULT_API_KEY
+        except:
+            final_api_key = DEFAULT_API_KEY
+    
+    if not final_model:
+        try:
+            final_model = cl.user_session.get("openai_model") or DEFAULT_MODEL
+        except:
+            final_model = DEFAULT_MODEL
+    
+    return {
+        "config_list": [{
+            "model": final_model,
+            "api_key": final_api_key
+        }]
+    }
+
+# 初始 llm_config（會在 on_chat_start 時根據使用者設定更新）
+llm_config = get_llm_config()
 
 # ===== 深入分析工具函數 =====
-def perform_deep_analysis_tool(case_id: str) -> Dict:
+def Z3CodeExecution(case_id: str) -> Dict:
     """
     執行案例 Z3 求解的工具函數
     
@@ -76,7 +124,7 @@ def perform_deep_analysis_tool(case_id: str) -> Dict:
 
 
 # ===== 應用自定義約束工具函數 =====
-def apply_custom_constraints_tool(case_id: Optional[str] = None, constraints: Optional[Dict] = None) -> Dict:
+def CustomizeZ3constraintExecution(case_id: Optional[str] = None, constraints: Optional[Dict] = None) -> Dict:
     """
     應用自定義約束並執行 Z3 重新求解的工具函數
     
@@ -209,8 +257,16 @@ async def header_auth_callback(headers) -> cl.User | None:
     )
 
 async def stream_completion(prompt: str):
-    stream = await client.chat.completions.create(
-        model="gpt-4o-mini",
+    # 取得當前的 client
+    current_client = cl.user_session.get("openai_client") or client
+    current_model = cl.user_session.get("openai_model") or DEFAULT_MODEL
+    
+    if not current_client:
+        yield "❌ 請先設定 OpenAI API Key"
+        return
+        
+    stream = await current_client.chat.completions.create(
+        model=current_model,
         messages=[{"role": "user", "content": prompt}],
         stream=True,
     )
@@ -222,14 +278,66 @@ async def stream_completion(prompt: str):
 @cl.on_chat_start
 async def start_chat():
     """初始化對話"""
-    # 創建 Agents
-    host = HostAgent(llm_config)
-    search = SearchAgent(llm_config)
-    summary = SummaryAgent(llm_config)
-    code_executor = CodeExecutorAgent(llm_config)
-    deep_analysis = DeepAnalysisAgent(llm_config)
-    legal_retrieval = LegalRetrievalAgent(llm_config)
-    constraint_customization = ConstraintCustomizationAgent(llm_config)
+    global client
+    
+    # ===== 設定 Chat Settings 介面 =====
+    # 注意：Chainlit 的 TextInput 目前不支援 password 類型
+    # API Key 會以明文顯示，但只存在於當前 session 中
+    settings = await cl.ChatSettings(
+        [
+            TextInput(
+                id="openai_api_key",
+                label="🔐 OpenAI API Key",
+                placeholder="sk-proj-...",
+                initial=DEFAULT_API_KEY if DEFAULT_API_KEY else "",
+                description="輸入您的 OpenAI API Key（僅用於當前對話，不會被儲存）"
+            ),
+            Select(
+                id="openai_model",
+                label="🤖 OpenAI Model",
+                values=AVAILABLE_MODELS,
+                initial_value=DEFAULT_MODEL,
+                description="選擇要使用的 OpenAI 模型"
+            ),
+        ]
+    ).send()
+    
+    # 從設定取得值
+    api_key = settings.get("openai_api_key") or DEFAULT_API_KEY
+    model = settings.get("openai_model") or DEFAULT_MODEL
+    
+    # 驗證 API Key
+    if not api_key:
+        await cl.Message(
+            content="⚠️ **未設定 OpenAI API Key**\n\n請點擊左下角的 ⚙️ 設定按鈕，輸入您的 API Key 後再開始對話。"
+        ).send()
+        return
+    
+    # 保存設定到 session
+    cl.user_session.set("openai_api_key", api_key)
+    cl.user_session.set("openai_model", model)
+    
+    # 建立 OpenAI 客戶端
+    openai_client = AsyncOpenAI(api_key=api_key)
+    cl.user_session.set("openai_client", openai_client)
+    
+    # 更新全域 client（用於某些全域函數）
+    client = openai_client
+    
+    # 取得 LLM 配置
+    current_llm_config = get_llm_config(api_key, model)
+    cl.user_session.set("llm_config", current_llm_config)
+    
+    print(f"[App] 使用模型: {model}")
+    print(f"[App] API Key: {api_key[:8]}...{api_key[-4:] if len(api_key) > 12 else '***'}")
+    
+    # 創建 Agents（使用當前的 llm_config）
+    host = HostAgent(current_llm_config)
+    search = SearchCaseAgent(current_llm_config)
+    summary = SummaryAgent(current_llm_config)
+    deep_analysis = DeepAnalysisAgent(current_llm_config)
+    legal_retrieval = SearchLawAgent(current_llm_config)
+    constraint_customization = CustomizeConstraintAgent(current_llm_config)
     user_proxy = BaseUserProxy()
     
     print("[App] 註冊工具函數...")
@@ -259,23 +367,23 @@ async def start_chat():
     
     # 註冊工具函數給 deep_analysis_agent
     deep_analysis.register_function(
-        perform_deep_analysis_tool,
+        Z3CodeExecution,
         user_proxy.get_proxy(),
         "執行案例深入分析。輸入 case_id 返回分析報告。"
     )
     
     # 註冊工具函數給 constraint_customization_agent
     constraint_customization.register_function(
-        apply_custom_constraints_tool,
+        CustomizeZ3constraintExecution,
         user_proxy.get_proxy(),
         "應用自定義約束並執行 Z3 重新求解。輸入 case_id 和自定義約束字典。"
     )
     
-    # 創建 ChatManager
+    # 創建 ChatManager（使用當前的 llm_config）
     chat_manager = ChatManager(
         agents=[host, search, summary, code_executor, deep_analysis, legal_retrieval, constraint_customization],
         user_proxy=user_proxy,
-        llm_config=llm_config,
+        llm_config=current_llm_config,
         max_round=100
     )
     
@@ -330,6 +438,108 @@ async def setup_sidebar():
         print("[App] ✅ 側邊欄設置完成")
     except Exception as e:
         print(f"[App] 設置失敗: {e}")
+
+
+@cl.on_settings_update
+async def on_settings_update(settings):
+    """
+    處理使用者更改設定
+    當使用者在設定面板中更改 API Key 或 Model 時觸發
+    """
+    global client
+    
+    api_key = settings.get("openai_api_key") or DEFAULT_API_KEY
+    model = settings.get("openai_model") or DEFAULT_MODEL
+    
+    print(f"[Settings] 設定更新 - 模型: {model}")
+    print(f"[Settings] API Key: {api_key[:8]}...{api_key[-4:] if len(api_key) > 12 else '***'}")
+    
+    # 驗證 API Key
+    if not api_key:
+        await cl.Message(
+            content="⚠️ **API Key 不能為空**\n\n請輸入有效的 OpenAI API Key。"
+        ).send()
+        return
+    
+    # 保存新設定到 session
+    cl.user_session.set("openai_api_key", api_key)
+    cl.user_session.set("openai_model", model)
+    
+    # 建立新的 OpenAI 客戶端
+    openai_client = AsyncOpenAI(api_key=api_key)
+    cl.user_session.set("openai_client", openai_client)
+    
+    # 更新全域 client
+    client = openai_client
+    
+    # 更新 LLM 配置
+    new_llm_config = get_llm_config(api_key, model)
+    cl.user_session.set("llm_config", new_llm_config)
+    
+    # 重新建立 ChatManager 以使用新的設定
+    try:
+        # 取得 deep_analysis_agent
+        deep_analysis = cl.user_session.get("deep_analysis_agent")
+        
+        # 創建新的 Agents
+        host = HostAgent(new_llm_config)
+        search = SearchCaseAgent(new_llm_config)
+        summary = SummaryAgent(new_llm_config)
+        
+        # 如果 deep_analysis 不存在，重新創建
+        if not deep_analysis:
+            deep_analysis = DeepAnalysisAgent(new_llm_config)
+            cl.user_session.set("deep_analysis_agent", deep_analysis)
+        
+        legal_retrieval = SearchLawAgent(new_llm_config)
+        constraint_customization = CustomizeConstraintAgent(new_llm_config)
+        user_proxy = BaseUserProxy()
+        
+        # 註冊工具函數
+        legal_retrieval.register_function(
+            legal_article_search,
+            user_proxy.get_proxy(),
+            "搜索相關法條。當使用者要求查詢法律、法條時使用此函數。"
+        )
+        search.register_function(
+            search_and_rerank,
+            user_proxy.get_proxy(),
+            "搜索並重新排序案例"
+        )
+        deep_analysis.register_function(
+            Z3CodeExecution,
+            user_proxy.get_proxy(),
+            "執行案例深入分析。輸入 case_id 返回分析報告。"
+        )
+        constraint_customization.register_function(
+            CustomizeZ3constraintExecution,
+            user_proxy.get_proxy(),
+            "應用自定義約束並執行 Z3 重新求解。輸入 case_id 和自定義約束字典。"
+        )
+        
+        # 創建新的 ChatManager
+        chat_manager = ChatManager(
+            agents=[host, search, summary, code_executor, deep_analysis, legal_retrieval, constraint_customization],
+            user_proxy=user_proxy,
+            llm_config=new_llm_config,
+            max_round=100
+        )
+        
+        # 保存到 session（會覆蓋舊的 chat_manager）
+        cl.user_session.set("chat_manager", chat_manager)
+        
+        await cl.Message(
+            content=f"✅ **設定已更新**\n\n- 模型：`{model}`\n- API Key 已更新\n\n系統已準備就緒，請開始對話！"
+        ).send()
+        
+        print("[Settings] ✅ ChatManager 已重新建立")
+        
+    except Exception as e:
+        print(f"[Settings] ❌ 重建 ChatManager 失敗: {e}")
+        await cl.Message(
+            content=f"⚠️ 設定已保存，但系統更新失敗：{str(e)}\n\n請嘗試刷新頁面。"
+        ).send()
+
 
 async def handle_upload_summary():
     """
@@ -474,8 +684,15 @@ async def generate_conversation_summary(message_history: list) -> str:
 請生成專業、結構清晰的摘要報告："""
     
     try:
-        response = await client.chat.completions.create(
-            model=OPENAI_MODEL,
+        # 取得當前的 client 和 model
+        current_client = cl.user_session.get("openai_client") or client
+        current_model = cl.user_session.get("openai_model") or DEFAULT_MODEL
+        
+        if not current_client:
+            return "# 對話摘要\n\n_摘要生成失敗：未設定 OpenAI API Key_"
+        
+        response = await current_client.chat.completions.create(
+            model=current_model,
             messages=[
                 {
                     "role": "system",
@@ -1080,7 +1297,7 @@ async def on_apply_custom_constraints(action):
         print(f"[ApplyConstraints] 約束數: {len(constraints)}")
         
         # 執行工具
-        result = apply_custom_constraints_tool(case_id, constraints)
+        result = CustomizeZ3constraintExecution(case_id, constraints)
         
         # 更新狀態消息
         if result.get("status") == "success":
