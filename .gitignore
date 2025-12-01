@@ -18,6 +18,9 @@ wheels/
 # Chroma 數據庫
 chroma_db/
 
+# Chainlit 數據庫（包含用戶會話資料，可能含有敏感資訊）
+chainlit.db
+
 # IDE
 .vscode/
 .idea/
