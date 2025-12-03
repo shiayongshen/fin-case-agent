@@ -11,7 +11,7 @@ except Exception:
 
     cl = _CLShim()
 
-from agents.ConstraintCustomizationAgent import CustomizeConstraintAgent
+from agents.CustomizeConstraintAgent import CustomizeConstraintAgent
 
 
 class SimpleSession:

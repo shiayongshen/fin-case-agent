@@ -4,7 +4,7 @@ from .SearchCaseAgent import SearchCaseAgent
 from .SummaryAgent import SummaryAgent
 from .DeepAnalysisAgent import DeepAnalysisAgent
 from .SearchLawAgent import SearchLawAgent
-from .ConstraintCustomizationAgent import CustomizeConstraintAgent
+from .CustomizeConstraintAgent import CustomizeConstraintAgent
 from .ChatManager import ChatManager
 
 __all__ = [

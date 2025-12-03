@@ -7,7 +7,7 @@ from typing import Dict, List, Optional, Union
 import json
 
 
-class ApplyCustomConstraintsTool:
+class Z3ConstraintCustomization:
     """
     工具：應用自定義約束並執行新的 Z3 求解
     
@@ -401,9 +401,9 @@ class ApplyCustomConstraintsTool:
 
 
 # 全局工具實例
-apply_constraints_tool = ApplyCustomConstraintsTool()
+apply_constraints_tool = Z3ConstraintCustomization()
 
 
-def get_apply_constraints_tool() -> ApplyCustomConstraintsTool:
+def get_apply_constraints_tool() -> Z3ConstraintCustomization:
     """獲取全局應用約束工具實例"""
     return apply_constraints_tool

@@ -144,7 +144,7 @@ def CustomizeZ3constraintExecution(case_id: Optional[str] = None, constraints: O
         包含新求解結果的字典
     """
     try:
-        from agents.ApplyCustomConstraintsTool import get_apply_constraints_tool
+        from find_optimize_result.Z3ConstraintCustomization import get_apply_constraints_tool
         
         # 如果 case_id 未提供，從 session 中自動提取
         actual_case_id: Optional[str] = case_id
