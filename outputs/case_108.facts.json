@@ -2,7 +2,6 @@
   "capital_adequacy_ratio": 100.0,
   "net_worth": 100.0,
   "net_worth_ratio": 2.5,
-  "capital_level": 1,
   "violate_148_1_1_or_2_flag": true,
   "violate_148_1_1_or_2": true,
   "violate_148_2_1": false,

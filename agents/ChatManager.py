@@ -250,7 +250,25 @@ class ChatManager:
 
             # Host 顯式要求啟動自定義約束（Host 負責決定何時輸出此標記）
             if "【啟動自定義約束】" in last_content or "啟動自定義約束" in last_content:
-                print(f"[StateTransition] 偵測到自定義約束需求（Host 觸發），切換會話狀態並轉交 constraint_customization_agent")
+                print(f"[StateTransition] 偵測到自定義約束需求（Host 觸發），檢查是否存在 case ID...")
+                
+                # ⭐ 檢查是否存在 case ID
+                z3_result = cl.user_session.get("latest_z3_solving_result")
+                case_id = None
+                if z3_result and isinstance(z3_result, dict):
+                    case_id = z3_result.get("case_id")
+                
+                if not case_id:
+                    print(f"[StateTransition] ❌ 沒有找到有效的 case ID，不能啟動自定義約束")
+                    # 設置標誌，只發送一次提示訊息
+                    if not cl.user_session.get("case_id_warning_sent"):
+                        cl.user_session.set("case_id_not_found", True)
+                        cl.user_session.set("case_id_warning_sent", True)
+                    # 終止對話流程
+                    print(f"[StateTransition] 終止對話流程，不再進行狀態轉換")
+                    return None
+                
+                print(f"[StateTransition] ✅ 找到 case ID: {case_id}，切換會話狀態並轉交 constraint_customization_agent")
                 cl.user_session.set("conversation_state", "constraint_customization")
                 
                 # ⭐ 在轉交前，注入完整的變數列表到聊天消息
@@ -374,9 +392,9 @@ class ChatManager:
                     elif previous_agent_name == "search_agent":
                         print(f"[StateTransition] User proxy 執行完搜尋，轉給 summary_agent 生成摘要")
                         return self._get_autogen_agent_by_name("summary_agent")
-                    elif previous_agent_name == "code_executor":
-                        print(f"[StateTransition] User proxy 執行完程式碼，返回 code_executor")
-                        return self._get_autogen_agent_by_name("code_executor")
+                    # elif previous_agent_name == "code_executor":
+                    #     print(f"[StateTransition] User proxy 執行完程式碼，返回 code_executor")
+                        # return self._get_autogen_agent_by_name("code_executor")
                     elif previous_agent_name == "deep_analysis_agent":
                         print(f"[StateTransition] User proxy 執行完深入分析工具，切換回 deep_analysis_agent")
                         return self._get_autogen_agent_by_name("deep_analysis_agent")
@@ -935,6 +953,11 @@ class ChatManager:
                     if agent == "host_agent" and self._has_waiting_confirmation_tag(content):
                         await self._show_waiting_confirmation(agent, content)
                         continue
+
+                    # ⭐ 檢查是否有 case_id_not_found 標誌
+                    if cl.user_session.get("case_id_not_found"):
+                        cl.user_session.set("case_id_not_found", False)
+                        await self._send_case_id_required_message()
 
                     if await self._handle_upload_buttons_if_any(agent, content):
                         continue
@@ -1499,6 +1522,19 @@ class ChatManager:
             "chat_manager": "👨‍💼"
         }
         return emoji_map.get(agent_name, "🤖")
+
+    async def _send_case_id_required_message(self):
+        """發送 case ID 不存在的提示訊息"""
+        import chainlit as cl
+        
+        try:
+            msg = cl.Message(
+                content="❌ **無法啟動自定義約束**\n\n自定義約束功能需要基於已搜索到的案例。請先進行「案例搜索」或「深入分析」來取得案例數據。"
+            )
+            await msg.send()
+            print("[ChatManager] 已發送 case ID 不存在的提示訊息")
+        except Exception as e:
+            print(f"[ChatManager] 發送提示訊息失敗: {e}")
 
     async def _cleanup_active_waiting_messages(self):
         """清理所有活躍的等待訊息按鈕"""

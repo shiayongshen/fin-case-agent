@@ -312,7 +312,7 @@
       "penalty",
       false
     ],
-    "weight": 0,
+    "weight": 1,
     "domain": "meta"
   },
   {
@@ -403,7 +403,7 @@
         ]
       ]
     ],
-    "weight": 0,
+    "weight": 1,
     "domain": "meta"
   }
 ]

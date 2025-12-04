@@ -46,7 +46,7 @@ except Exception as e:
     print(f"法條搜索引擎初始化失敗: {e}")
     legal_search_available = False
 
-def legal_article_search(query: str, top_k: int = 5, rerank_top_n: int = 3, hybrid_alpha: float = 0.5) -> str:
+def legal_article_search(query: str, top_k: int = 50, rerank_top_n: int = 25, hybrid_alpha: float = 0.5) -> str:
     """法條搜索功能"""
     if not legal_search_available:
         return "法條搜索引擎未正確初始化，請檢查資料庫配置。"

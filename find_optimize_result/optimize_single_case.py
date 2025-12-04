@@ -6,6 +6,11 @@ import json
 import z3
 import sys
 from pathlib import Path
+
+# 添加當前目錄到 Python 路徑，以便導入 json2z3
+current_dir = Path(__file__).parent
+sys.path.insert(0, str(current_dir))
+
 from json2z3 import declare_vars, build_expr
 
 

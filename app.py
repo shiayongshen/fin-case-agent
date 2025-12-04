@@ -10,6 +10,7 @@ from chainlit.data.storage_clients.base import BaseStorageClient
 from agents import ChatManager, BaseUserProxy, HostAgent, SearchCaseAgent, DeepAnalysisAgent, SummaryAgent, SearchLawAgent, CustomizeConstraintAgent
 from utility.legal_search import legal_article_search,search_and_rerank
 from utility.execute_file import list_available_code_files, execute_python_file
+from utility.api_key_manager import get_global_api_key, set_global_api_key
 import httpx
 from datetime import datetime
 from typing import Optional, Dict
@@ -17,7 +18,8 @@ import asyncio
 load_dotenv()
 
 # ===== 預設配置 =====
-DEFAULT_API_KEY = os.getenv("OPENAI_API_KEY", "")
+# 優先順序：環境變數 > 全局配置文件 > 預設值
+DEFAULT_API_KEY = os.getenv("OPENAI_API_KEY") or get_global_api_key() or ""
 DEFAULT_MODEL = "gpt-4.1-mini"
 
 # 支援的模型列表
@@ -144,7 +146,7 @@ def CustomizeZ3constraintExecution(case_id: Optional[str] = None, constraints: O
         包含新求解結果的字典
     """
     try:
-        from find_optimize_result.Z3ConstraintCustomization import get_apply_constraints_tool
+        from utility.ConstraintCustomizationTool import get_apply_constraints_tool
         
         # 如果 case_id 未提供，從 session 中自動提取
         actual_case_id: Optional[str] = case_id
@@ -182,17 +184,20 @@ def CustomizeZ3constraintExecution(case_id: Optional[str] = None, constraints: O
                 tool.add_fix_constraint(var_name, constraint_def.get("value"))
             
             elif constraint_type == "LOWER_BOUND":
-                tool.add_lower_bound(var_name, constraint_def.get("lower_bound"))
+                # 相容多種鍵名格式
+                value = constraint_def.get("lower_bound") or constraint_def.get("value")
+                tool.add_lower_bound(var_name, value)
             
             elif constraint_type == "UPPER_BOUND":
-                tool.add_upper_bound(var_name, constraint_def.get("upper_bound"))
+                # 相容多種鍵名格式
+                value = constraint_def.get("upper_bound") or constraint_def.get("value")
+                tool.add_upper_bound(var_name, value)
             
             elif constraint_type == "RANGE":
-                tool.add_range_constraint(
-                    var_name,
-                    constraint_def.get("lower_bound"),
-                    constraint_def.get("upper_bound")
-                )
+                # 相容多種鍵名格式：min/max、lower_bound/upper_bound
+                lower = constraint_def.get("lower_bound") or constraint_def.get("min")
+                upper = constraint_def.get("upper_bound") or constraint_def.get("max")
+                tool.add_range_constraint(var_name, lower, upper)
         
         # 應用約束並執行求解
         result = tool.apply_constraints_and_resolve()
@@ -275,23 +280,89 @@ async def stream_completion(prompt: str):
         if delta and delta.content:
             yield delta.content
 
+
+
+async def show_api_key_input_dialog():
+    """顯示 API Key 輸入對話框"""
+    response = await cl.AskUserMessage(
+        content="🔐 **需要設置 OpenAI API Key**\n\n請輸入您的 OpenAI API Key (sk-proj-...):",
+        timeout=300
+    ).send()
+    
+    if response:
+        try:
+            new_api_key = response.get("output", "").strip() if isinstance(response, dict) else str(response).strip()
+            
+            if new_api_key:
+                # 驗證 API Key 格式
+                if not new_api_key.startswith("sk-"):
+                    await cl.Message(
+                        content="⚠️ **警告**：API Key 應以 'sk-' 開頭。仍將嘗試使用此 Key。"
+                    ).send()
+                
+                # 保存 API Key
+                set_global_api_key(new_api_key)
+                os.environ["OPENAI_API_KEY"] = new_api_key
+                
+                await cl.Message(
+                    content="✅ **API Key 已設置**\n\nAPI Key 已保存到本地配置文件。應用程式已準備就緒。"
+                ).send()
+                
+                # 重新加載全局 API Key 變數
+                global DEFAULT_API_KEY
+                DEFAULT_API_KEY = new_api_key
+                
+        except Exception as e:
+            await cl.Message(
+                content=f"❌ **設置失敗**：{str(e)}"
+            ).send()
+
+
+
+
 @cl.on_chat_start
 async def start_chat():
     """初始化對話"""
-    global client
+    global client, DEFAULT_API_KEY
+    
+    # 檢查 API Key - 需要是有效的 OpenAI Key（以 sk- 開頭）
+    api_key = DEFAULT_API_KEY
+    
+    # 驗證 API Key 是否有效（不是預設的佔位符）
+    is_valid_api_key = (
+        api_key 
+        and api_key.startswith("sk-") 
+        and len(api_key) > 20
+        and "your-api" not in api_key.lower()
+        and "placeholder" not in api_key.lower()
+    )
+    
+    # 如果沒有有效的 API Key，先彈出設置對話框
+    while not is_valid_api_key:
+        await show_api_key_input_dialog()
+        
+        # 重新讀取 API Key
+        api_key = os.getenv("OPENAI_API_KEY") or get_global_api_key()
+        DEFAULT_API_KEY = api_key
+        
+        # 再次驗證
+        is_valid_api_key = (
+            api_key 
+            and api_key.startswith("sk-") 
+            and len(api_key) > 20
+            and "your-api" not in api_key.lower()
+            and "placeholder" not in api_key.lower()
+        )
+        
+        if not is_valid_api_key:
+            await cl.Message(
+                content="❌ **無效的 API Key**\n\n請確保輸入的是有效的 OpenAI API Key（以 sk- 開頭）。"
+            ).send()
     
     # ===== 設定 Chat Settings 介面 =====
-    # 注意：Chainlit 的 TextInput 目前不支援 password 類型
-    # API Key 會以明文顯示，但只存在於當前 session 中
+    # 只允許選擇模型，API Key 通過設置對話框管理
     settings = await cl.ChatSettings(
         [
-            TextInput(
-                id="openai_api_key",
-                label="🔐 OpenAI API Key",
-                placeholder="sk-proj-...",
-                initial=DEFAULT_API_KEY if DEFAULT_API_KEY else "",
-                description="輸入您的 OpenAI API Key（僅用於當前對話，不會被儲存）"
-            ),
             Select(
                 id="openai_model",
                 label="🤖 OpenAI Model",
@@ -302,19 +373,10 @@ async def start_chat():
         ]
     ).send()
     
-    # 從設定取得值
-    api_key = settings.get("openai_api_key") or DEFAULT_API_KEY
+    # 從設定中取得模型
     model = settings.get("openai_model") or DEFAULT_MODEL
     
-    # 驗證 API Key
-    if not api_key:
-        await cl.Message(
-            content="⚠️ **未設定 OpenAI API Key**\n\n請點擊左下角的 ⚙️ 設定按鈕，輸入您的 API Key 後再開始對話。"
-        ).send()
-        return
-    
     # 保存設定到 session
-    cl.user_session.set("openai_api_key", api_key)
     cl.user_session.set("openai_model", model)
     
     # 建立 OpenAI 客戶端
@@ -329,7 +391,11 @@ async def start_chat():
     cl.user_session.set("llm_config", current_llm_config)
     
     print(f"[App] 使用模型: {model}")
-    print(f"[App] API Key: {api_key[:8]}...{api_key[-4:] if len(api_key) > 12 else '***'}")
+    if api_key:
+        masked_key = f"{api_key[:8]}...{api_key[-4:]}" if len(api_key) > 12 else "***"
+        print(f"[App] API Key: {masked_key}")
+    else:
+        print("[App] ⚠️ API Key 未設置")
     
     # 創建 Agents（使用當前的 llm_config）
     host = HostAgent(current_llm_config)
@@ -369,19 +435,65 @@ async def start_chat():
     deep_analysis.register_function(
         Z3CodeExecution,
         user_proxy.get_proxy(),
-        "執行案例深入分析。輸入 case_id 返回分析報告。"
+        """執行 Z3 深入分析求解，生成完整的分析報告。
+
+參數：
+- case_id (str): 案例 ID，如 'case_0' 或 'case_405'
+
+返回值：
+- status: 'success' 或 'error'
+- case_id: 案例編號
+- initial_facts: 原始事實集合（字典）
+- suggested_model: Z3 求解結果/建議模型
+- analysis_report: 完整的分析報告（Markdown 格式）
+- variable_changes: 變數變化列表（與建議值的對比）
+
+使用場景：
+- 用戶要求對某個案例進行深入分析
+- 需要查看 Z3 求解的詳細結果
+- 為後續的約束自定義提供基礎數據"""
     )
     
     # 註冊工具函數給 constraint_customization_agent
     constraint_customization.register_function(
         CustomizeZ3constraintExecution,
         user_proxy.get_proxy(),
-        "應用自定義約束並執行 Z3 重新求解。輸入 case_id 和自定義約束字典。"
+        """應用自定義約束條件並執行 Z3 重新求解，返回新的求解結果。
+
+參數：
+- case_id (str, optional): 案例 ID，如 'case_0'。若不提供則自動從 session 提取
+- constraints (dict): 自定義約束字典，格式為：
+  {
+    "variable_name": {
+      "type": "FIX|LOWER_BOUND|UPPER_BOUND|RANGE",
+      "value": <值>,              # 用於 FIX 類型
+      "lower_bound": <值>,        # 用於 LOWER_BOUND 或 RANGE
+      "upper_bound": <值> 或 "max": <值>  # 用於 UPPER_BOUND 或 RANGE
+    }
+  }
+
+約束類型說明：
+- FIX: 將變數固定為特定值
+- LOWER_BOUND: 設定變數最小值（>= value）
+- UPPER_BOUND: 設定變數最大值（<= value）
+- RANGE: 設定變數上下界範圍（value_min <= var <= value_max）
+
+返回值：
+- status: 'success' 或 'error'
+- message: 操作結果訊息
+- solving_result: 新的 Z3 求解結果
+  - initial_facts: 新的初始事實
+  - suggested_model: 新的建議模型
+
+使用場景：
+- 用戶想調整某些變數的值或範圍
+- 基於深入分析結果進行進一步的約束優化
+- 測試不同的約束組合以找到最佳方案"""
     )
     
     # 創建 ChatManager（使用當前的 llm_config）
     chat_manager = ChatManager(
-        agents=[host, search, summary, code_executor, deep_analysis, legal_retrieval, constraint_customization],
+        agents=[host, search, summary, deep_analysis, legal_retrieval, constraint_customization],
         user_proxy=user_proxy,
         llm_config=current_llm_config,
         max_round=100
@@ -440,29 +552,29 @@ async def setup_sidebar():
         print(f"[App] 設置失敗: {e}")
 
 
+
+
 @cl.on_settings_update
 async def on_settings_update(settings):
     """
     處理使用者更改設定
-    當使用者在設定面板中更改 API Key 或 Model 時觸發
+    當使用者在設定面板中更改模型時觸發
     """
     global client
     
-    api_key = settings.get("openai_api_key") or DEFAULT_API_KEY
     model = settings.get("openai_model") or DEFAULT_MODEL
+    api_key = DEFAULT_API_KEY
     
     print(f"[Settings] 設定更新 - 模型: {model}")
-    print(f"[Settings] API Key: {api_key[:8]}...{api_key[-4:] if len(api_key) > 12 else '***'}")
     
     # 驗證 API Key
     if not api_key:
         await cl.Message(
-            content="⚠️ **API Key 不能為空**\n\n請輸入有效的 OpenAI API Key。"
+            content="⚠️ **API Key 不能為空**\n\n請重新設置 API Key。"
         ).send()
         return
     
     # 保存新設定到 session
-    cl.user_session.set("openai_api_key", api_key)
     cl.user_session.set("openai_model", model)
     
     # 建立新的 OpenAI 客戶端
@@ -509,17 +621,63 @@ async def on_settings_update(settings):
         deep_analysis.register_function(
             Z3CodeExecution,
             user_proxy.get_proxy(),
-            "執行案例深入分析。輸入 case_id 返回分析報告。"
+            """執行 Z3 深入分析求解，生成完整的分析報告。
+
+參數：
+- case_id (str): 案例 ID，如 'case_0' 或 'case_405'
+
+返回值：
+- status: 'success' 或 'error'
+- case_id: 案例編號
+- initial_facts: 原始事實集合（字典）
+- suggested_model: Z3 求解結果/建議模型
+- analysis_report: 完整的分析報告（Markdown 格式）
+- variable_changes: 變數變化列表（與建議值的對比）
+
+使用場景：
+- 用戶要求對某個案例進行深入分析
+- 需要查看 Z3 求解的詳細結果
+- 為後續的約束自定義提供基礎數據"""
         )
         constraint_customization.register_function(
             CustomizeZ3constraintExecution,
             user_proxy.get_proxy(),
-            "應用自定義約束並執行 Z3 重新求解。輸入 case_id 和自定義約束字典。"
+            """應用自定義約束條件並執行 Z3 重新求解，返回新的求解結果。
+
+參數：
+- case_id (str, optional): 案例 ID，如 'case_0'。若不提供則自動從 session 提取
+- constraints (dict): 自定義約束字典，格式為：
+  {
+    "variable_name": {
+      "type": "FIX|LOWER_BOUND|UPPER_BOUND|RANGE",
+      "value": <值>,              # 用於 FIX 類型
+      "lower_bound": <值>,        # 用於 LOWER_BOUND 或 RANGE
+      "upper_bound": <值> 或 "max": <值>  # 用於 UPPER_BOUND 或 RANGE
+    }
+  }
+
+約束類型說明：
+- FIX: 將變數固定為特定值
+- LOWER_BOUND: 設定變數最小值（>= value）
+- UPPER_BOUND: 設定變數最大值（<= value）
+- RANGE: 設定變數上下界範圍（value_min <= var <= value_max）
+
+返回值：
+- status: 'success' 或 'error'
+- message: 操作結果訊息
+- solving_result: 新的 Z3 求解結果
+  - initial_facts: 新的初始事實
+  - suggested_model: 新的建議模型
+
+使用場景：
+- 用戶想調整某些變數的值或範圍
+- 基於深入分析結果進行進一步的約束優化
+- 測試不同的約束組合以找到最佳方案"""
         )
         
         # 創建新的 ChatManager
         chat_manager = ChatManager(
-            agents=[host, search, summary, code_executor, deep_analysis, legal_retrieval, constraint_customization],
+            agents=[host, search, summary, deep_analysis, legal_retrieval, constraint_customization],
             user_proxy=user_proxy,
             llm_config=new_llm_config,
             max_round=100
@@ -529,7 +687,7 @@ async def on_settings_update(settings):
         cl.user_session.set("chat_manager", chat_manager)
         
         await cl.Message(
-            content=f"✅ **設定已更新**\n\n- 模型：`{model}`\n- API Key 已更新\n\n系統已準備就緒，請開始對話！"
+            content=f"✅ **設定已更新**\n\n- 模型：`{model}`\n\n系統已準備就緒，請開始對話！"
         ).send()
         
         print("[Settings] ✅ ChatManager 已重新建立")
@@ -539,6 +697,7 @@ async def on_settings_update(settings):
         await cl.Message(
             content=f"⚠️ 設定已保存，但系統更新失敗：{str(e)}\n\n請嘗試刷新頁面。"
         ).send()
+
 
 
 async def handle_upload_summary():

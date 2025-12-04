@@ -128,6 +128,13 @@ class Z3ConstraintCustomization:
         Returns:
             操作結果
         """
+        # 檢查值是否為 None
+        if lower_bound is None or upper_bound is None:
+            return {
+                "status": "error",
+                "message": f"錯誤：下界或上界不能為 None"
+            }
+        
         if lower_bound > upper_bound:
             return {
                 "status": "error",
@@ -236,11 +243,26 @@ class Z3ConstraintCustomization:
                     "message": f"無法加載 {self.case_id} 的數據"
                 }
             
+            print(f"[ApplyCustomConstraintsTool] 原始約束數: {len(constraint_spec)}")
+            
             # 將自定義約束轉換為 Z3 表達式並添加到 constraint_spec
             updated_constraint_spec = self._add_custom_constraints_to_spec(
                 constraint_spec, 
                 varspecs
             )
+            
+            print(f"[ApplyCustomConstraintsTool] 更新後約束數: {len(updated_constraint_spec)}")
+            
+            # 驗證所有約束的 expr 字段不為 None
+            print(f"[ApplyCustomConstraintsTool] 正在驗證約束表達式...")
+            for i, c in enumerate(updated_constraint_spec):
+                if c.get('expr') is None:
+                    print(f"  ❌ 約束 {i} ({c.get('id', 'UNKNOWN')}) 的 expr 為 None")
+                    return {
+                        "status": "error",
+                        "message": f"約束 {i} ({c.get('id', 'UNKNOWN')}) 的 expr 為 None"
+                    }
+            print(f"[ApplyCustomConstraintsTool] ✅ 所有約束表達式都有效")
             
             # 執行求解
             initial_facts, suggested_model = optimize_module.solve_case(
@@ -302,6 +324,11 @@ class Z3ConstraintCustomization:
         for var_name, constraint in self.custom_constraints.items():
             constraint_type = constraint.get("type")
             
+            # 跳過不存在於 varspecs 中的變數
+            if var_name not in var_types:
+                print(f"[ApplyCustomConstraintsTool] ⚠️ 警告：變數 {var_name} 不存在於 varspecs 中，已跳過")
+                continue
+            
             if constraint_type == "FIX":
                 # 轉換為: var_name == value
                 value = constraint.get("value")
@@ -312,10 +339,15 @@ class Z3ConstraintCustomization:
                     "weight": 1,  # Hard constraint
                     "description": f"自定義約束：{var_name} = {value}"
                 })
+                print(f"[ApplyCustomConstraintsTool] ✅ 已添加固定值約束：{var_name} = {value}")
             
             elif constraint_type == "LOWER_BOUND":
                 # 轉換為: var_name >= lower_bound
-                lower = constraint.get("lower_bound")
+                # 相容兩種格式：lower_bound 或 value
+                lower = constraint.get("lower_bound") or constraint.get("value")
+                if lower is None:
+                    print(f"[ApplyCustomConstraintsTool] ⚠️ 警告：下界約束缺少值，已跳過")
+                    continue
                 expr = ["GE", ["VAR", var_name], lower]
                 new_constraints.append({
                     "id": f"custom_lower_{var_name}",
@@ -323,10 +355,15 @@ class Z3ConstraintCustomization:
                     "weight": 1,
                     "description": f"自定義約束：{var_name} >= {lower}"
                 })
+                print(f"[ApplyCustomConstraintsTool] ✅ 已添加下界約束：{var_name} >= {lower}")
             
             elif constraint_type == "UPPER_BOUND":
                 # 轉換為: var_name <= upper_bound
-                upper = constraint.get("upper_bound")
+                # 相容兩種格式：upper_bound 或 value
+                upper = constraint.get("upper_bound") or constraint.get("value")
+                if upper is None:
+                    print(f"[ApplyCustomConstraintsTool] ⚠️ 警告：上界約束缺少值，已跳過")
+                    continue
                 expr = ["LE", ["VAR", var_name], upper]
                 new_constraints.append({
                     "id": f"custom_upper_{var_name}",
@@ -334,11 +371,18 @@ class Z3ConstraintCustomization:
                     "weight": 1,
                     "description": f"自定義約束：{var_name} <= {upper}"
                 })
+                print(f"[ApplyCustomConstraintsTool] ✅ 已添加上界約束：{var_name} <= {upper}")
             
             elif constraint_type == "RANGE":
                 # 轉換為: lower_bound <= var_name <= upper_bound
-                lower = constraint.get("lower_bound")
-                upper = constraint.get("upper_bound")
+                # 相容多種格式：lower_bound/upper_bound 或 min/max
+                lower = constraint.get("lower_bound") or constraint.get("min")
+                upper = constraint.get("upper_bound") or constraint.get("max")
+                
+                # 檢查值是否有效
+                if lower is None or upper is None:
+                    print(f"[ApplyCustomConstraintsTool] ⚠️ 警告：範圍約束缺少下界或上界，已跳過")
+                    continue
                 
                 # 添加下界約束
                 expr_lower = ["GE", ["VAR", var_name], lower]
@@ -357,6 +401,7 @@ class Z3ConstraintCustomization:
                     "weight": 1,
                     "description": f"自定義約束：{var_name} <= {upper}"
                 })
+                print(f"[ApplyCustomConstraintsTool] ✅ 已添加範圍約束：{lower} <= {var_name} <= {upper}")
         
         # 合併原始約束和新約束
         updated_spec = constraint_spec + new_constraints

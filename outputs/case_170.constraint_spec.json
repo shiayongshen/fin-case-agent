@@ -205,7 +205,7 @@
       "penalty",
       false
     ],
-    "weight": 0,
+    "weight": 1,
     "domain": "meta"
   },
   {
@@ -237,7 +237,7 @@
         "prohibited_actions_without_consent"
       ]
     ],
-    "weight": 0,
+    "weight": 1,
     "domain": "meta"
   }
 ]

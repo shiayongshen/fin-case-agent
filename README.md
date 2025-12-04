@@ -26,6 +26,23 @@ source .venv/bin/activate  # Linux/Mac
 .venv\Scripts\activate     # Windows
 ```
 
+### 🔐 API Key 配置
+
+應用程式支持多種方式配置 OpenAI API Key：
+
+#### 1. 環境變數設置（推薦用於生產）
+```bash
+export OPENAI_API_KEY="sk-proj-your-api-key"
+chainlit run app.py
+```
+
+#### 2. `.env` 文件設置（推薦用於開發）
+在項目根目錄創建 `.env` 文件：
+```plaintext
+OPENAI_API_KEY=sk-proj-your-api-key
+CHAINLIT_AUTH_SECRET=your-secret-here
+```
+
 ### 數據庫初始化
 
 ```bash
