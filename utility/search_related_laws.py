@@ -26,7 +26,7 @@ def get_openai_api_key():
 class LegalSearchEngine:
     def __init__(self, 
                  persist_directory: str = "./chroma_db",
-                 collection_name: str = "law_articles_csv",
+                 collection_name: str = "law_articles_csv_version1",
                  reranker_model: str = "BAAI/bge-reranker-v2-m3",
                  use_fp16: bool = False,
                  hybrid_alpha: float = 0.8):  # 混合搜尋權重

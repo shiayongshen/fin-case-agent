@@ -428,7 +428,31 @@ async def start_chat():
     search.register_function(
         search_and_rerank,
         user_proxy.get_proxy(),
-        "搜索並重新排序案例"
+"""搜索並重排法律案例結果，支持三種模式：
+
+【模式 1】按案例 ID 精確搜索 - 當用戶提供 case_id 時使用
+  示例: search_and_rerank(query="case_59", metadata_filters={"case_id": "case_59"})
+
+【模式 2】按內容關鍵詞搜索 - 當用戶提供法律概念或事實時使用  
+  示例: search_and_rerank(query="資本不足", top_k=3)
+
+【模式 3】複合搜索 - 內容搜索 + 元數據過濾
+  示例: search_and_rerank(query="違規", metadata_filters={"status": "active"})
+
+【參數說明】
+  - query (str): 搜索查詢，可以是 case_id、法律概念或事實描述
+  - top_k (int, 預設=1): 返回結果的數量
+  - metadata_filters (dict | None): 元數據過濾條件
+    * 案例 ID 過濾: {"case_id": "case_59"}
+    * 複合條件: {"$and": [{"case_id": "case_0"}, {"status": "active"}]}
+    * 範圍過濾: {"field": {"$gte": value, "$lte": value}}
+
+【返回值】字典，包含以下鍵：
+  - 'ids': 案例 ID 列表
+  - 'ranked_documents': 排序後的文檔內容
+  - 'ranked_metadatas': 排序後的元數據
+  - 'scores': 相關性分數
+  - 'extracted_codes': 提取的代碼片段"""
     )
     
     # 註冊工具函數給 deep_analysis_agent
@@ -616,7 +640,20 @@ async def on_settings_update(settings):
         search.register_function(
             search_and_rerank,
             user_proxy.get_proxy(),
-            "搜索並重新排序案例"
+"""
+    搜索並重排結果，支持 metadata 過濾
+    
+    Args:
+        query: 搜索查詢
+        top_k: 返回的結果數量
+        metadata_filters: metadata 過濾條件，格式為字典
+                         例如: {"case_id": "case_0"}
+                         或多條件: {"$and": [{"case_id": "case_0"}, {"status": "active"}]}
+                         支持 Chroma 的所有過濾語法
+    
+    Returns:
+        包含排序後的文檔、metadata 和 ID 的字典
+"""
         )
         deep_analysis.register_function(
             Z3CodeExecution,

@@ -3,10 +3,10 @@ import os
 
 # 支持作為腳本直接運行或作為模塊導入
 try:
-    from .search_deep_laws import LegalSearchEngine
+    from .search_related_laws import LegalSearchEngine
 except ImportError:
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    from search_deep_laws import LegalSearchEngine
+    from search_related_laws import LegalSearchEngine
 
 from chromadb import Client
 from chromadb.config import Settings
@@ -18,6 +18,64 @@ load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 COLLECTION_NAME = "legal_cases_v2024"  # 與 embed_cases_to_chroma.py 保持一致
+
+
+# ===== Metadata 過濾輔助函數 =====
+def build_case_id_filter(case_id: str) -> dict:
+    """構建按 case_id 過濾的條件"""
+    return {"case_id": case_id}
+
+
+def build_composite_filter(**kwargs) -> dict:
+    """構建複合過濾條件
+    
+    Args:
+        **kwargs: 多個 metadata 字段和值，會自動用 $and 連接
+                 例如: build_composite_filter(case_id="case_0", status="active")
+    
+    Returns:
+        適用於 Chroma 的過濾字典
+    """
+    if not kwargs:
+        return {}
+    
+    if len(kwargs) == 1:
+        # 單一條件
+        key, value = list(kwargs.items())[0]
+        return {key: value}
+    else:
+        # 多個條件，用 $and 連接
+        conditions = [{k: v} for k, v in kwargs.items()]
+        return {"$and": conditions}
+
+
+def build_range_filter(field: str, min_val=None, max_val=None) -> dict:
+    """構建範圍過濾條件
+    
+    Args:
+        field: metadata 字段名稱
+        min_val: 最小值（包含 >=）
+        max_val: 最大值（包含 <=）
+    
+    Returns:
+        適用於 Chroma 的過濾字典
+    """
+    if min_val is not None and max_val is not None:
+        return {
+            "$and": [
+                {field: {"$gte": min_val}},
+                {field: {"$lte": max_val}}
+            ]
+        }
+    elif min_val is not None:
+        return {field: {"$gte": min_val}}
+    elif max_val is not None:
+        return {field: {"$lte": max_val}}
+    else:
+        return {}
+
+
+# ===== Reranker 初始化 =====
 def initialize_reranker():
     """初始化 reranker，自動檢測 CUDA/MPS 可用性"""
     if torch.cuda.is_available():
@@ -82,13 +140,17 @@ def legal_article_search(query: str, top_k: int = 50, rerank_top_n: int = 25, hy
         return f"搜索時發生錯誤：{str(e)}"
 
 
-def search_and_rerank(query: str, top_k=1):
+def search_and_rerank(query: str, top_k=1, metadata_filters: dict | None = None):
     """
-    搜索並重排結果
+    搜索並重排結果，支持 metadata 過濾
     
     Args:
         query: 搜索查詢
         top_k: 返回的結果數量
+        metadata_filters: metadata 過濾條件，格式為字典
+                         例如: {"case_id": "case_0"}
+                         或多條件: {"$and": [{"case_id": "case_0"}, {"status": "active"}]}
+                         支持 Chroma 的所有過濾語法
     
     Returns:
         包含排序後的文檔、metadata 和 ID 的字典
@@ -96,11 +158,19 @@ def search_and_rerank(query: str, top_k=1):
     reranker = initialize_reranker()
     collection = get_chroma_collection()
     
+    # 構建查詢參數
+    query_params = {
+        "query_texts": [query],
+        "n_results": top_k * 2
+    }
+    
+    # 如果提供了 metadata_filters，添加到查詢中
+    if metadata_filters:
+        query_params["where"] = metadata_filters
+        print(f"[搜索] 應用 metadata 過濾: {metadata_filters}")
+    
     # 獲取前 top_k * 2 個結果用於重排
-    search_results = collection.query(
-        query_texts=[query],
-        n_results=top_k * 2
-    )
+    search_results = collection.query(**query_params)
     
     documents = search_results['documents'][0] if search_results['documents'] else []
     metadatas = search_results['metadatas'][0] if search_results['metadatas'] else []

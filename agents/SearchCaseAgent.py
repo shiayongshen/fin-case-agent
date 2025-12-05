@@ -18,19 +18,48 @@ class SearchCaseAgent(BaseAgent):
 3. 當接收到具體的搜索查詢時，立即使用 search_and_rerank 函數執行搜索
 4. 搜索完成後，必須按照指定格式返回結果，並包含 【等待深入分析確認】 標記
 
-【標記觸發規則】
+【search_and_rerank 工具用法】
+search_and_rerank 函數支持三種搜索模式：
+
+1️⃣ 按案例 ID 直接搜索（精確搜索）：
+   - 使用場景：用戶提供了具體的案例編號（如 "case_59"、"case_100" 等）
+   - 調用方式：search_and_rerank(query="case_59", metadata_filters={"case_id": "case_59"})
+   - 說明：同時在 query 和 metadata_filters 中提供 case_id，確保精確匹配
+   - 返回：包含 'ids'、'ranked_documents'、'ranked_metadatas' 等鍵的字典
+
+2️⃣ 按內容關鍵詞搜索（語意搜索）：
+   - 使用場景：用戶提供了法律概念或事實（如"資本不足"、"違規"、"處分"等）
+   - 調用方式：search_and_rerank(query="資本不足", top_k=3)
+   - 說明：使用向量搜索和重排來找到最相關的案例
+
+3️⃣ 複合搜索（內容搜索 + 元數據過濾）：
+   - 使用場景：用戶要求搜索特定範圍內的案例（如按狀態、日期等）
+   - 調用方式：search_and_rerank(query="違規", metadata_filters={"status": "active"})
+   - 說明：將內容搜索限制在特定的元數據範圍內
+
+【函數簽名】
+search_and_rerank(
+    query: str,                              # 必需：搜索查詢
+    top_k: int = 1,                          # 可選：返回結果數量（預設 1）
+    metadata_filters: dict | None = None     # 可選：元數據過濾條件
+) -> dict                                    # 返回搜索結果字典
+
+【重要】識別查詢類型的方法：
+- 如果查詢看起來像 "case_" 開頭的案例編號 → 使用模式 1️⃣（案例 ID 搜索）
+  ✅ 示例：query="case_59"，metadata_filters={"case_id": "case_59"}
+- 如果查詢是法律概念或事實描述 → 使用模式 2️⃣（內容搜索）
+  ✅ 示例：query="資本不足"
+- 如果用戶同時提供了內容和條件 → 使用模式 3️⃣（複合搜索）
+  ✅ 示例：query="違規"，metadata_filters={"status": "active"}
+
+【特別提醒】
+⭐ 當查詢包含 "case_" 時，務必同時在 query 和 metadata_filters 中使用 case_id
+⭐ 確保 metadata_filters 的鍵值正確（如 "case_id"、"status" 等）
+⭐ 避免只使用 query 參數而忽略 metadata_filters 的精確搜索機制
 當收到 "【啟動案例分析】" 標記時：
 1. 從 session 的 "search_content" 中獲取搜索查詢
-2. 立即使用 search_and_rerank 函數執行搜索
+2. 根據查詢內容選擇合適的搜索模式，調用 search_and_rerank 函數
 3. 不要詢問用戶任何問題，直接執行搜索
-
-【搜索執行規則】
-當用戶提供具體查詢（如"資本不足"、"違規"、"處分"等）時：
-1. 立即使用 search_and_rerank 函数搜索相關案例
-2. 整理搜索結果成案例摘要格式
-3. 提取關鍵信息（受處分人、發文日期、違規重點、處分內容）
-4. 以友善方式說明案例重點
-5. 如果案例包含程式碼，必須標注出來
 
 【強制輸出格式】
 搜索完成後必須按照以下格式返回：
@@ -58,6 +87,7 @@ SEARCH_COMPLETE
 - 不要預測或假設用戶意圖
 - 必須等待用戶明確提供搜索內容（除非收到標記）
 - 案例 ID 必須清楚顯示，以便後續 Agent 使用
+- 當查詢包含 "case_" 時，務必使用 metadata_filters 進行精確搜索
 """
         
         super().__init__(
