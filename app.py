@@ -41,36 +41,73 @@ client = AsyncOpenAI(api_key=DEFAULT_API_KEY) if DEFAULT_API_KEY else None
 def get_llm_config(api_key: Optional[str] = None, model: Optional[str] = None) -> dict:
     """
     取得 LLM 配置
+    支持 OpenAI 和 Ollama
     
     Args:
-        api_key: OpenAI API Key，如果不提供則從 session 或環境變數取得
-        model: 模型名稱，如果不提供則從 session 或預設值取得
+        api_key: OpenAI API Key 或 Ollama 標記
+        model: 模型名稱
     
     Returns:
         llm_config 字典
     """
-    # 優先順序：參數 > session > 環境變數/預設值
-    final_api_key = api_key
-    final_model = model
+    import os
     
-    if not final_api_key:
-        try:
-            final_api_key = cl.user_session.get("openai_api_key") or DEFAULT_API_KEY
-        except:
-            final_api_key = DEFAULT_API_KEY
+    # 檢查是否使用 Ollama
+    use_ollama = os.getenv("USE_OLLAMA", "false").lower() == "true"
     
-    if not final_model:
-        try:
-            final_model = cl.user_session.get("openai_model") or DEFAULT_MODEL
-        except:
-            final_model = DEFAULT_MODEL
-    
-    return {
-        "config_list": [{
-            "model": final_model,
-            "api_key": final_api_key
-        }]
-    }
+    if use_ollama:
+        # Ollama 配置
+        ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+        ollama_model = os.getenv("OLLAMA_MODEL", "mistral")
+        
+        # ⭐ 關鍵：Ollama 的 API 相容 OpenAI，但需要在基礎 URL 中添加 /v1
+        # Ollama 實際端點：http://localhost:11434/v1/chat/completions
+        # AutoGen 會自動添加 /chat/completions，所以基礎 URL 需要包含 /v1
+        if not ollama_base_url.endswith("/v1"):
+            ollama_base_url = f"{ollama_base_url.rstrip('/')}/v1"
+        
+        print(f"[LLM Config] 🦙 使用 Ollama")
+        print(f"   模型: {ollama_model}")
+        print(f"   服務地址: {ollama_base_url}")
+        
+        return {
+            "config_list": [{
+                "model": ollama_model,
+                "api_key": "ollama",  # Ollama 不需要真實的 API key
+                "base_url": ollama_base_url,
+                "api_type": "openai",  # Ollama 相容 OpenAI API
+            }],
+            "temperature": 0.7,
+            "timeout": 120,
+            "max_tokens": 2048,
+        }
+    else:
+        # OpenAI 配置（原有邏輯）
+        # 優先順序：參數 > session > 環境變數/預設值
+        final_api_key = api_key
+        final_model = model
+        
+        if not final_api_key:
+            try:
+                final_api_key = cl.user_session.get("openai_api_key") or DEFAULT_API_KEY
+            except:
+                final_api_key = DEFAULT_API_KEY
+        
+        if not final_model:
+            try:
+                final_model = cl.user_session.get("openai_model") or DEFAULT_MODEL
+            except:
+                final_model = DEFAULT_MODEL
+        
+        print(f"[LLM Config] 🔑 使用 OpenAI")
+        print(f"   模型: {final_model}")
+        
+        return {
+            "config_list": [{
+                "model": final_model,
+                "api_key": final_api_key
+            }]
+        }
 
 # 初始 llm_config（會在 on_chat_start 時根據使用者設定更新）
 llm_config = get_llm_config()
