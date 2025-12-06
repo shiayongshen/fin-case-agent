@@ -58,7 +58,7 @@ docker-compose down
 ### 首次啟動（一次性操作）
 ```bash
 # 1. 進入項目目錄
-cd /Users/vincenthsia/uicompliance
+cd uicompliance
 
 # 2. 確認 .env 檔案存在且包含 OPENAI_API_KEY
 cat .env

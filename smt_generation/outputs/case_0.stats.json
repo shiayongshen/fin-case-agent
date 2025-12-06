@@ -1,0 +1,523 @@
+{
+  "case_id": "case_0",
+  "success": true,
+  "error_message": null,
+  "total_time_sec": 87.91,
+  "repair_attempts": 0,
+  "total_agent_calls": 5,
+  "total_input_tokens": 16742,
+  "total_output_tokens": 5623,
+  "total_tokens": 22365,
+  "total_cost_usd": 0.015694,
+  "timestamp": "2025-12-06T23:34:02.969141",
+  "step1_law_parser": "PASS",
+  "step2_completion": "PASS",
+  "step3_json_valid": "PASS",
+  "step4_varspec": "PASS",
+  "step5_constraints_parseable": "PASS",
+  "step5_repair_needed": "FAIL",
+  "step5_repair_success": "NOT_RUN",
+  "step6_consistency_check": "PASS",
+  "step6_repair_success": "PASS",
+  "step7_case_mapper": "PASS",
+  "step7_facts_validation": "NOT_RUN",
+  "step7_z3_validation": "PASS",
+  "step8_case_law_check": "PASS",
+  "step8_repair_success": "NOT_RUN",
+  "step8_violation_detected": "PASS",
+  "step9_z3_optimize": "PASS",
+  "consistency_check": "PASS",
+  "agent_calls": [
+    {
+      "agent": "parser",
+      "input_tokens": 2578,
+      "output_tokens": 2179,
+      "elapsed_time": 28.37931180000305,
+      "cost": 0.0045176
+    },
+    {
+      "agent": "parser_completion",
+      "input_tokens": 7699,
+      "output_tokens": 2197,
+      "elapsed_time": 31.222156047821045,
+      "cost": 0.006594800000000001
+    },
+    {
+      "agent": "varspec",
+      "input_tokens": 133,
+      "output_tokens": 560,
+      "elapsed_time": 12.99791407585144,
+      "cost": 0.0009492000000000001
+    },
+    {
+      "agent": "varspec_post_repair",
+      "input_tokens": 133,
+      "output_tokens": 560,
+      "elapsed_time": 12.321823835372925,
+      "cost": 0.0009492000000000001
+    },
+    {
+      "agent": "mapper",
+      "input_tokens": 6199,
+      "output_tokens": 127,
+      "elapsed_time": 2.8624749183654785,
+      "cost": 0.0026828000000000004
+    }
+  ],
+  "checkpoints_detail": {
+    "step1_law_parser": {
+      "passed": true,
+      "details": "5827 chars",
+      "timestamp": 28.379349946975708
+    },
+    "step2_completion": {
+      "passed": true,
+      "details": "5808 chars",
+      "timestamp": 59.601563930511475
+    },
+    "step3_json_valid": {
+      "passed": true,
+      "details": "11 constraints",
+      "timestamp": 59.60167407989502
+    },
+    "step4_varspec": {
+      "passed": true,
+      "details": "18 varspecs",
+      "timestamp": 72.59980392456055
+    },
+    "step5_constraints_parseable": {
+      "passed": true,
+      "details": "11 constraints",
+      "timestamp": 72.6303448677063
+    },
+    "step5_repair_needed": false,
+    "step5_repair_success": null,
+    "step6_consistency_check": {
+      "passed": true,
+      "details": "SAT",
+      "timestamp": 72.66857981681824
+    },
+    "step6_repair_success": {
+      "passed": true,
+      "details": "Repair successful",
+      "timestamp": 72.66858196258545
+    },
+    "step7_case_mapper": {
+      "passed": true,
+      "details": "11 facts",
+      "timestamp": 87.85517072677612
+    },
+    "step7_facts_validation": null,
+    "step7_z3_validation": {
+      "passed": true,
+      "details": "11 constraints",
+      "timestamp": 87.85647392272949
+    },
+    "step8_case_law_check": {
+      "passed": true,
+      "details": "UNSAT",
+      "timestamp": 87.87992787361145
+    },
+    "step8_repair_success": null,
+    "step8_violation_detected": {
+      "passed": true,
+      "details": "['meta:penalty_default_false', 'c21']",
+      "timestamp": 87.87993288040161
+    },
+    "step9_z3_optimize": {
+      "passed": true,
+      "details": "success",
+      "timestamp": 87.90107989311218
+    },
+    "consistency_check": {
+      "passed": true,
+      "details": "Consistent after 0 attempts",
+      "timestamp": 72.66857194900513
+    }
+  },
+  "fix_logs": [
+    {
+      "id": "varspec:capital_level",
+      "rule": "Auto convert to Real",
+      "before": "Int",
+      "after": "Real",
+      "timestamp": 72.62
+    },
+    {
+      "id": "insurance:capital_level",
+      "rule": "Fix CASE structure/type",
+      "before": [
+        "EQ",
+        "capital_level",
+        [
+          "CASE",
+          [
+            "OR",
+            [
+              "LT",
+              [
+                "DIV",
+                "own_capital",
+                "risk_capital"
+              ],
+              0.5
+            ],
+            [
+              "LT",
+              "net_worth",
+              0.0
+            ]
+          ],
+          4,
+          [
+            "AND",
+            [
+              "GE",
+              [
+                "DIV",
+                "own_capital",
+                "risk_capital"
+              ],
+              0.5
+            ],
+            [
+              "LT",
+              [
+                "DIV",
+                "own_capital",
+                "risk_capital"
+              ],
+              1.5
+            ],
+            [
+              "OR",
+              [
+                "AND",
+                [
+                  "LT",
+                  "net_worth_ratio_prev1",
+                  0.02
+                ],
+                [
+                  "LT",
+                  "net_worth_ratio_prev2",
+                  0.02
+                ]
+              ],
+              [
+                "AND",
+                [
+                  "GE",
+                  "net_worth_ratio_prev1",
+                  0.0
+                ],
+                [
+                  "LT",
+                  "net_worth_ratio_prev1",
+                  0.02
+                ],
+                [
+                  "LT",
+                  "net_worth_ratio_prev2",
+                  0.03
+                ]
+              ]
+            ]
+          ],
+          3,
+          [
+            "AND",
+            [
+              "GE",
+              [
+                "DIV",
+                "own_capital",
+                "risk_capital"
+              ],
+              0.5
+            ],
+            [
+              "LT",
+              [
+                "DIV",
+                "own_capital",
+                "risk_capital"
+              ],
+              2.0
+            ],
+            [
+              "OR",
+              [
+                "AND",
+                [
+                  "GE",
+                  "net_worth_ratio_prev1",
+                  0.02
+                ],
+                [
+                  "LT",
+                  "net_worth_ratio_prev1",
+                  0.03
+                ],
+                [
+                  "GE",
+                  "net_worth_ratio_prev2",
+                  0.03
+                ]
+              ],
+              [
+                "AND",
+                [
+                  "GE",
+                  "net_worth_ratio_prev1",
+                  0.03
+                ],
+                [
+                  "GE",
+                  "net_worth_ratio_prev2",
+                  0.03
+                ]
+              ]
+            ]
+          ],
+          2,
+          [
+            "AND",
+            [
+              "GE",
+              [
+                "DIV",
+                "own_capital",
+                "risk_capital"
+              ],
+              1.5
+            ],
+            [
+              "LT",
+              [
+                "DIV",
+                "own_capital",
+                "risk_capital"
+              ],
+              2.0
+            ]
+          ],
+          [
+            "AND",
+            [
+              "GE",
+              [
+                "DIV",
+                "own_capital",
+                "risk_capital"
+              ],
+              2.0
+            ],
+            [
+              "OR",
+              [
+                "GE",
+                "net_worth_ratio_prev1",
+                0.03
+              ],
+              [
+                "GE",
+                "net_worth_ratio_prev2",
+                0.03
+              ]
+            ]
+          ],
+          1,
+          0
+        ]
+      ],
+      "after": [
+        "EQ",
+        "capital_level",
+        [
+          "CASE",
+          [
+            "OR",
+            [
+              "LT",
+              [
+                "DIV",
+                "own_capital",
+                "risk_capital"
+              ],
+              0.5
+            ],
+            [
+              "LT",
+              "net_worth",
+              0.0
+            ]
+          ],
+          4,
+          [
+            "AND",
+            [
+              "GE",
+              [
+                "DIV",
+                "own_capital",
+                "risk_capital"
+              ],
+              0.5
+            ],
+            [
+              "LT",
+              [
+                "DIV",
+                "own_capital",
+                "risk_capital"
+              ],
+              1.5
+            ],
+            [
+              "OR",
+              [
+                "AND",
+                [
+                  "LT",
+                  "net_worth_ratio_prev1",
+                  0.02
+                ],
+                [
+                  "LT",
+                  "net_worth_ratio_prev2",
+                  0.02
+                ]
+              ],
+              [
+                "AND",
+                [
+                  "GE",
+                  "net_worth_ratio_prev1",
+                  0.0
+                ],
+                [
+                  "LT",
+                  "net_worth_ratio_prev1",
+                  0.02
+                ],
+                [
+                  "LT",
+                  "net_worth_ratio_prev2",
+                  0.03
+                ]
+              ]
+            ]
+          ],
+          3,
+          [
+            "AND",
+            [
+              "GE",
+              [
+                "DIV",
+                "own_capital",
+                "risk_capital"
+              ],
+              0.5
+            ],
+            [
+              "LT",
+              [
+                "DIV",
+                "own_capital",
+                "risk_capital"
+              ],
+              2.0
+            ],
+            [
+              "OR",
+              [
+                "AND",
+                [
+                  "GE",
+                  "net_worth_ratio_prev1",
+                  0.02
+                ],
+                [
+                  "LT",
+                  "net_worth_ratio_prev1",
+                  0.03
+                ],
+                [
+                  "GE",
+                  "net_worth_ratio_prev2",
+                  0.03
+                ]
+              ],
+              [
+                "AND",
+                [
+                  "GE",
+                  "net_worth_ratio_prev1",
+                  0.03
+                ],
+                [
+                  "GE",
+                  "net_worth_ratio_prev2",
+                  0.03
+                ]
+              ]
+            ]
+          ],
+          2,
+          [
+            "AND",
+            [
+              "GE",
+              [
+                "DIV",
+                "own_capital",
+                "risk_capital"
+              ],
+              1.5
+            ],
+            [
+              "LT",
+              [
+                "DIV",
+                "own_capital",
+                "risk_capital"
+              ],
+              2.0
+            ]
+          ],
+          [
+            "AND",
+            [
+              "GE",
+              [
+                "DIV",
+                "own_capital",
+                "risk_capital"
+              ],
+              2.0
+            ],
+            [
+              "OR",
+              [
+                "GE",
+                "net_worth_ratio_prev1",
+                0.03
+              ],
+              [
+                "GE",
+                "net_worth_ratio_prev2",
+                0.03
+              ]
+            ]
+          ],
+          1,
+          0,
+          0.0
+        ]
+      ],
+      "timestamp": 72.62
+    }
+  ]
+}

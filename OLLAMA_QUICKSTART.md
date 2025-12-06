@@ -14,7 +14,6 @@ ollama serve
 
 ### 2️⃣ 運行啟動腳本（在新終端）
 ```bash
-cd /Users/vincenthsia/uicompliance
 chmod +x start_with_ollama.sh
 ./start_with_ollama.sh
 ```
@@ -102,7 +101,6 @@ ollama serve
 
 **終端 2** - 啟動應用：
 ```bash
-cd /Users/vincenthsia/uicompliance
 chmod +x start_with_ollama.sh
 ./start_with_ollama.sh
 ```
@@ -197,8 +195,6 @@ success
 ### 第 3 步：啟動應用（終端 2）
 
 ```bash
-# 進入項目目錄
-cd /Users/vincenthsia/uicompliance
 
 # 激活虛擬環境
 source .venv/bin/activate
@@ -565,7 +561,7 @@ chainlit run app.py
 ## 💾 文件位置參考
 
 ```
-/Users/vincenthsia/uicompliance/
+uicompliance/
 ├── start_with_ollama.sh          # 🚀 自動化啟動腳本
 ├── config_loader.sh              # ⚙️ 環境配置管理
 ├── test_agent_ollama.py          # 🧪 測試工具

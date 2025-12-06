@@ -4,7 +4,7 @@ from typing import List, Dict, Union, Any
 
 from gradio_look import extract_softs_from_code,extract_softs_description_and_varnames
 from autogen import *
-from search_deep_laws import LegalSearchEngine
+from data_preprocess.search_deep_laws import LegalSearchEngine
 from chromadb import Client, Settings
 from chromadb.utils.embedding_functions import OpenAIEmbeddingFunction
 from FlagEmbedding import FlagReranker

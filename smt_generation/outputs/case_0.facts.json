@@ -1,0 +1,13 @@
+{
+  "own_capital": 1.1109,
+  "risk_capital": 1.0,
+  "net_worth": 2.97,
+  "net_worth_ratio_prev1": 2.97,
+  "net_worth_ratio_prev2": 2.97,
+  "capital_insufficient_plan_submitted": true,
+  "capital_insufficient_plan_executed": false,
+  "level_2_measures_executed": false,
+  "level_3_measures_done": false,
+  "level_4_measures_done": false,
+  "penalty": true
+}
