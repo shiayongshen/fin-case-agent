@@ -17,7 +17,8 @@ PROJECT_DIR="/app"
 CHROMA_DB_DIR="${PROJECT_DIR}/chroma_db"
 BACKUP_DIR="${PROJECT_DIR}/backups"
 BACKUP_FILE=""  # 將在下面尋找最新的備份
-CHAINLIT_DB_PATH="${PROJECT_DIR}/chainlit.db"
+CHAINLIT_DB_DIR="${PROJECT_DIR}/.chainlit"
+CHAINLIT_DB_PATH="${CHAINLIT_DB_DIR}/chainlit.db"
 
 # 函數：打印信息
 print_info() {
@@ -173,6 +174,7 @@ init_conversation_db() {
     fi
 
     # 確保 chainlit.db 檔案存在且可寫
+    mkdir -p "$CHAINLIT_DB_DIR"
     if [ -d "$CHAINLIT_DB_PATH" ]; then
         print_error "chainlit.db 是資料夾，無法初始化"
         return 1
@@ -183,7 +185,7 @@ init_conversation_db() {
     fi
 
     print_info "執行: uv run python database_utility/init_db.py"
-    if ! uv run python database_utility/init_db.py; then
+    if ! CHAINLIT_DB_PATH="$CHAINLIT_DB_PATH" uv run python database_utility/init_db.py; then
         print_error "初始化對話資料庫失敗"
         return 1
     fi

@@ -20,8 +20,8 @@ services:
       - chroma_db:/app/chroma_db
       # 分析輸出
       - ./outputs:/app/outputs
-      # 日誌文件
-      - ./chainlit.db:/app/chainlit.db
+      # 對話資料庫
+      - chainlit_db:/app/.chainlit
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:7861/health", "||", "exit", "1"]
       interval: 30s
@@ -32,6 +32,8 @@ volumes:
   chroma_db:
     driver: local
   code_execution:
+    driver: local
+  chainlit_db:
     driver: local
 
 networks:

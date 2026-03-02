@@ -1,4 +1,5 @@
 import asyncio
+import os
 from sqlalchemy import create_engine, text
 from sqlalchemy.ext.asyncio import create_async_engine
 
@@ -74,8 +75,13 @@ CREATE TABLE IF NOT EXISTS feedbacks (
 );
 """
 
+def get_db_url() -> str:
+    db_path = os.getenv("CHAINLIT_DB_PATH", "./chainlit.db")
+    return f"sqlite+aiosqlite:///{db_path}"
+
+
 async def init_database():
-    engine = create_async_engine("sqlite+aiosqlite:///./chainlit.db")
+    engine = create_async_engine(get_db_url())
     
     async with engine.begin() as conn:
         # 分割並執行每個 CREATE TABLE 語句
