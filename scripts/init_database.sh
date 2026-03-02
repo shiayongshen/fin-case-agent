@@ -162,6 +162,25 @@ start_application() {
     exec uv run chainlit run app.py --host 0.0.0.0 --port 7861
 }
 
+# 函數：初始化對話資料庫
+init_conversation_db() {
+    print_step "初始化對話資料庫 (chainlit.db)"
+
+    if [ ! -f "${PROJECT_DIR}/database_utility/init_db.py" ]; then
+        print_warn "未找到 database_utility/init_db.py，跳過初始化"
+        return 0
+    fi
+
+    print_info "執行: uv run python database_utility/init_db.py"
+    if ! uv run python database_utility/init_db.py; then
+        print_error "初始化對話資料庫失敗"
+        return 1
+    fi
+
+    print_info "✅ 對話資料庫初始化完成"
+    return 0
+}
+
 # 函數：主初始化流程
 main() {
     print_step "Chroma 數據庫初始化"
@@ -205,6 +224,11 @@ main() {
     fi
     
     print_info "數據庫初始化完成 ✅"
+
+    # 初始化對話資料庫
+    if ! init_conversation_db; then
+        print_warn "對話資料庫初始化失敗，仍嘗試啟動應用"
+    fi
     
     # 啟動應用
     start_application
