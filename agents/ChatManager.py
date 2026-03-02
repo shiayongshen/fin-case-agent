@@ -417,8 +417,8 @@ class ChatManager:
             # 由 LLM 輸出標記供 HostAgent 判斷
             if "【建議重新搜索】" in str(last_content) or "【建議進行分析】" in str(last_content) or "【建議結束】" in str(last_content):
                 print(f"[StateTransition] SummaryAgent 判斷搜索結果無關，轉交 HostAgent 決定後續")
-                return self._get_autogen_agent_by_name("host_agent")
-            
+                #return self._get_autogen_agent_by_name("host_agent")
+                return None
             # 情況3：其他情況（包括無相關案例的抱歉說明）
             # 停止對話，等待用戶回應下一步意願
             if "抱歉，目前找不到" in str(last_content) or "無相關案例" in str(last_content):
