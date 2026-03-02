@@ -242,6 +242,9 @@ main() {
     if ! init_conversation_db; then
         print_warn "對話資料庫初始化失敗，仍嘗試啟動應用"
     fi
+
+    # 將 DB 路徑傳給應用
+    export CHAINLIT_DB_PATH="$CHAINLIT_DB_PATH"
     
     # 啟動應用
     start_application

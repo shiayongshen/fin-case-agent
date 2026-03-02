@@ -285,8 +285,9 @@ class DummyStorageClient(BaseStorageClient):
 @cl.data_layer
 def get_data_layer():
     dummy = DummyStorageClient()
+    db_path = os.getenv("CHAINLIT_DB_PATH", "./chainlit.db")
     data_layer = SQLAlchemyDataLayer(
-        conninfo="sqlite+aiosqlite:///./chainlit.db",
+        conninfo=f"sqlite+aiosqlite:///{db_path}",
         storage_provider=dummy
     )
     return data_layer
