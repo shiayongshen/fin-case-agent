@@ -62,8 +62,7 @@ required_modules = [
     'chromadb',
     'openai',
     'chainlit',
-    'torch',
-    'FlagEmbedding',
+    'rank_bm25',
     'tiktoken'
 ]
 

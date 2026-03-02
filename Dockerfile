@@ -1,26 +1,20 @@
-# 使用 NVIDIA CUDA 基礎映像（支援 GPU 加速）
-FROM nvidia/cuda:12.1.0-cudnn8-runtime-ubuntu22.04
+# 使用輕量 Python 基礎映像（無 torch 版本）
+FROM python:3.11-slim
 
 WORKDIR /app
 
 # 設置非交互式安裝
 ENV DEBIAN_FRONTEND=noninteractive
 
-# 安裝 Python 3.11 和系統依賴（Ubuntu 22.04 原生支援 3.11）
+# 安裝系統依賴
 RUN apt-get update && apt-get install -y \
-    python3.11 \
-    python3.11-venv \
-    python3.11-dev \
-    python3-pip \
     build-essential \
     tar \
     gzip \
     bash \
     curl \
     git \
-    && rm -rf /var/lib/apt/lists/* \
-    && ln -sf /usr/bin/python3.11 /usr/bin/python3 \
-    && ln -sf /usr/bin/python3.11 /usr/bin/python
+    && rm -rf /var/lib/apt/lists/*
 
 # 安裝 uv 包管理器
 RUN pip install uv
@@ -31,10 +25,6 @@ COPY pyproject.toml ./
 # 使用 uv 安裝依賴（重新生成 lock 檔案）
 # 不使用全局 CUDA 索引，避免其他套件從 PyTorch 索引安裝
 RUN uv lock && uv sync --no-install-project
-
-# 單獨安裝 CUDA 版本的 PyTorch（覆蓋 CPU 版本）
-RUN . .venv/bin/activate && \
-    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121 --force-reinstall
 
 # 複製應用代碼
 COPY . .
@@ -56,9 +46,5 @@ EXPOSE 7861
 ENV REPORT_API_BASE=http://fin-backend:6677
 ENV PYTHONPATH=/app
 ENV CHAINLIT_AUTH_DISABLED=true
-# CUDA 相關環境變數
-ENV NVIDIA_VISIBLE_DEVICES=all
-ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility
-
 # 使用初始化腳本作為入口點
 ENTRYPOINT ["/bin/bash", "/app/scripts/init_database.sh"]

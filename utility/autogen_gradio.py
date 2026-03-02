@@ -7,7 +7,10 @@ from autogen import *
 from data_preprocess.search_deep_laws import LegalSearchEngine
 from chromadb import Client, Settings
 from chromadb.utils.embedding_functions import OpenAIEmbeddingFunction
-from FlagEmbedding import FlagReranker
+try:
+    from .reranker import initialize_reranker
+except ImportError:
+    from reranker import initialize_reranker
 from autogen.coding import DockerCommandLineCodeExecutor, LocalCommandLineCodeExecutor
 from fpdf import FPDF
 import os
@@ -15,7 +18,6 @@ from datetime import datetime
 from src.soft_extractor import extract_softs_from_file
 from src.modify_constraint import modify_constraints_api
 from dotenv import load_dotenv
-from utils import initialize_reranker
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 

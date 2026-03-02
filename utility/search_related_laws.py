@@ -9,7 +9,12 @@ from rank_bm25 import BM25Okapi
 # 向量資料庫
 from chromadb import Client, Settings
 from chromadb.utils.embedding_functions import OpenAIEmbeddingFunction
-from FlagEmbedding import FlagReranker
+
+# 支持作為腳本直接運行或作為模塊導入
+try:
+    from .reranker import initialize_reranker
+except ImportError:
+    from reranker import initialize_reranker
 from dotenv import load_dotenv
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -70,23 +75,10 @@ class LegalSearchEngine:
             logger.error(f"連接集合失敗: {str(e)}")
             raise
         
-        # 初始化重排序模型
+        # 初始化重排序模型（無 torch 版本）
         try:
-            import torch
-            if torch.cuda.is_available():
-                device = "cuda"
-                use_fp16 = True
-                print(f"✅ 檢測到 CUDA GPU: {torch.cuda.get_device_name(0)}")
-            elif torch.backends.mps.is_available():
-                device = "mps"
-                use_fp16 = False  # MPS 目前對 FP16 支援不穩定
-                print("🍎 檢測到 Apple MPS GPU，加速模式啟用")
-            else:
-                device = "cpu"
-                use_fp16 = False
-                print("⚠️ 未檢測到 GPU，使用 CPU 模式")
-            self.reranker = FlagReranker(reranker_model, use_fp16=use_fp16, device=device)
-            logger.info(f"成功載入重排序模型: {reranker_model} 到設備: {device}")
+            self.reranker = initialize_reranker()
+            logger.info("成功載入重排序模型: SimpleReranker (CPU)")
         except Exception as e:
             logger.error(f"載入重排序模型失敗: {str(e)}")
             raise

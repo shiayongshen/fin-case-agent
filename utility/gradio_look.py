@@ -8,7 +8,10 @@ import numpy as np
 import openai
 from chromadb import Client, Settings
 from chromadb.utils.embedding_functions import OpenAIEmbeddingFunction
-from FlagEmbedding import FlagReranker
+try:
+    from .reranker import initialize_reranker
+except ImportError:
+    from reranker import initialize_reranker
 from z3 import *
 from config import OPENAI_API_KEY
 from cone_of_influence import directed_inference_core
@@ -17,8 +20,8 @@ import logging
 
 # 設定環境變數
 openai.api_key = OPENAI_API_KEY
-# 初始化 FlagReranker 重排序器
-reranker = FlagReranker('BAAI/bge-reranker-v2-m3', use_fp16=True)
+# 初始化重排序器（無 torch 版本）
+reranker = initialize_reranker()
 
 # 連接到 Chroma 資料庫
 def get_chroma_collection():
