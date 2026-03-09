@@ -7,9 +7,17 @@ services:
     restart: unless-stopped
     ports:
       - "7861:7861"
+    env_file:
+      - .env
     environment:
       - REPORT_API_BASE=${REPORT_API_BASE:-http://fin-backend:6677}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - LANGFUSE_PUBLIC_KEY=${LANGFUSE_PUBLIC_KEY}
+      - LANGFUSE_SECRET_KEY=${LANGFUSE_SECRET_KEY}
+      - LANGFUSE_HOST=${LANGFUSE_HOST}
+      - LANGFUSE_BASE_URL=${LANGFUSE_BASE_URL}
+      - LANGFUSE_ENV=${LANGFUSE_ENV}
+      - LANGFUSE_RELEASE=${LANGFUSE_RELEASE}
       - PYTHONPATH=/app
       - CHAINLIT_AUTH_SECRET=${CHAINLIT_AUTH_SECRET:-8KeiRx0U3_tfUh38c1cERszzd3bLCGpb1eAUA_DBHm4}
     networks: 

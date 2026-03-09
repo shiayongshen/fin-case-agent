@@ -1,6 +1,35 @@
 import os
+import importlib
+import contextlib
+import sys
 from typing import Dict, Optional
 from dotenv import load_dotenv
+
+load_dotenv()
+
+def _maybe_patch_openai_with_langfuse() -> bool:
+    public_key = os.getenv("LANGFUSE_PUBLIC_KEY")
+    secret_key = os.getenv("LANGFUSE_SECRET_KEY")
+    if not (public_key and secret_key):
+        return False
+
+    if os.getenv("LANGFUSE_BASE_URL") and not os.getenv("LANGFUSE_HOST"):
+        os.environ["LANGFUSE_HOST"] = os.getenv("LANGFUSE_BASE_URL", "")
+
+    try:
+        lf_openai = importlib.import_module("langfuse.openai")
+        if hasattr(lf_openai, "openai"):
+            sys.modules["openai"] = lf_openai.openai
+            print("[Langfuse] OpenAI SDK patched for tracing.")
+            return True
+        print("[Langfuse] openai wrapper not found in langfuse.openai.")
+    except Exception as exc:
+        print(f"[Langfuse] Failed to patch OpenAI SDK: {exc}")
+    return False
+
+LANGFUSE_PATCHED = _maybe_patch_openai_with_langfuse()
+_LANGFUSE_CLIENT = None
+
 import chainlit as cl
 from chainlit.input_widget import TextInput, Select, InputWidget
 from openai import AsyncOpenAI
@@ -13,9 +42,55 @@ from utility.execute_file import list_available_code_files, execute_python_file
 from utility.api_key_manager import get_global_api_key, set_global_api_key
 import httpx
 from datetime import datetime
-from typing import Optional, Dict
 import asyncio
-load_dotenv()
+import uuid
+
+def _lf_safe_str(value: Optional[str], max_len: int = 200) -> Optional[str]:
+    if value is None:
+        return None
+    s = str(value)
+    s = s.encode("ascii", "ignore").decode("ascii")
+    if len(s) > max_len:
+        s = s[:max_len]
+    return s or None
+
+def _get_langfuse_client():
+    global _LANGFUSE_CLIENT
+    if _LANGFUSE_CLIENT is None:
+        from langfuse import Langfuse
+        _LANGFUSE_CLIENT = Langfuse()
+    return _LANGFUSE_CLIENT
+
+def _langfuse_trace_context(
+    *,
+    user_id: Optional[str],
+    session_id: Optional[str],
+    tags: Optional[list[str]] = None,
+    metadata: Optional[dict[str, str]] = None,
+    trace_name: Optional[str] = None,
+):
+    if not LANGFUSE_PATCHED:
+        return contextlib.nullcontext()
+
+    try:
+        lf = _get_langfuse_client()
+        safe_metadata = {}
+        for k, v in (metadata or {}).items():
+            k_s = _lf_safe_str(k)
+            v_s = _lf_safe_str(v)
+            if k_s and v_s:
+                safe_metadata[k_s] = v_s
+
+        return lf.propagate_attributes(
+            user_id=_lf_safe_str(user_id),
+            session_id=_lf_safe_str(session_id),
+            tags=[t for t in [_lf_safe_str(x) for x in (tags or [])] if t],
+            metadata=safe_metadata,
+            trace_name=_lf_safe_str(trace_name),
+        )
+    except Exception as exc:
+        print(f"[Langfuse] Failed to set trace metadata: {exc}")
+        return contextlib.nullcontext()
 
 # ===== 預設配置 =====
 # 優先順序：環境變數 > 全局配置文件 > 預設值
@@ -596,6 +671,14 @@ async def start_chat():
     # 恢復 message_history（如果存在的話，否則初始化為空）
     if not cl.user_session.get("message_history"):
         cl.user_session.set("message_history", [])
+
+    # Langfuse trace metadata (per session)
+    if LANGFUSE_PATCHED:
+        user = cl.user_session.get("user")
+        user_id = getattr(user, "identifier", None) or "shared_user"
+        cl.user_session.set("langfuse_user_id", user_id)
+        if not cl.user_session.get("langfuse_session_id"):
+            cl.user_session.set("langfuse_session_id", str(uuid.uuid4()))
     
     # 設置側邊欄按鈕和信息
     await setup_sidebar()
@@ -1066,11 +1149,27 @@ async def on_message(msg: cl.Message):
     print(f"[DEBUG] 最終處理訊息類型: {type(processed_input)}, 值: {processed_input}")
     
     try:
-        # 使用串流模式處理對話
-        result = await chat_manager.initiate_chat_with_streaming(
-            message=processed_input,
-            stream_delay=0.001
-        )
+        # Langfuse trace metadata per request
+        lf_user_id = cl.user_session.get("langfuse_user_id") or "shared_user"
+        lf_session_id = cl.user_session.get("langfuse_session_id")
+        lf_tags = ["autogen", "chainlit", "uicompliance"]
+        lf_metadata = {
+            "model": _lf_safe_str(cl.user_session.get("openai_model") or DEFAULT_MODEL),
+            "conversation_state": _lf_safe_str(conversation_state),
+        }
+
+        with _langfuse_trace_context(
+            user_id=lf_user_id,
+            session_id=lf_session_id,
+            tags=lf_tags,
+            metadata=lf_metadata,
+            trace_name="autogen_chat",
+        ):
+            # 使用串流模式處理對話
+            result = await chat_manager.initiate_chat_with_streaming(
+                message=processed_input,
+                stream_delay=0.001
+            )
         
         # 🔍 Debug: 檢查結果格式
         print(f"[DEBUG] 對話結果類型: {type(result)}")
